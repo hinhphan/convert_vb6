@@ -105,7 +105,7 @@ class AutoConvert extends Command
         }
         
         foreach ($files as $file) {
-            if (!preg_match('/'.$programId.'.*/', $file->getFilename())) {
+            if (!preg_match('/'.$programId.'.*/', $file->getFilename()) || preg_match('/'.$programId.'_bas\.vb/', $file->getFilename()) || preg_match('/'.$programId.'\.log/', $file->getFilename())) {
                 File::delete($file->getPathname());
             }
         }
@@ -130,6 +130,7 @@ class AutoConvert extends Command
                 File::replaceInFile('Friend Sub New()', 'Public Sub New()', $file->getPathname());
                 $this->removeLineByKeySearch('\.OcxState', $file->getPathname(), true);
                 File::replaceInFile('_mnu', 'mnu', $file->getPathname());
+                File::replaceInFile('_opt', 'opt', $file->getPathname());
 
                 $fileContent = File::get($file->getPathname());
                 for ($idx = 0; $idx < 10; $idx++) { 
@@ -147,6 +148,7 @@ class AutoConvert extends Command
                 File::replaceInFile('AxxDropLib.AxxDrop', 'CoreLib.ComboBoxL', $file->getPathname());
                 File::replaceInFile('AxxLabelLib.AxxLabel', 'System.Windows.Forms.Label', $file->getPathname());
                 File::replaceInFile('AxxLabelLib.AxxLabelArray', 'System.Windows.Forms.Label', $file->getPathname());
+                File::replaceInFile('AxxLabelArray', 'CoreLib.LabelS', $file->getPathname());
                 File::replaceInFile('AxxCBtnLib.AxxCmdBtn', 'CoreLib.ButtonS', $file->getPathname());
                 File::replaceInFile('AxxCmdBtnArray', 'CoreLib.ButtonS', $file->getPathname());
                 File::replaceInFile('AxXOPTIONLib.AxxOption', 'System.Windows.Forms.RadioButton', $file->getPathname());
@@ -168,24 +170,72 @@ class AutoConvert extends Command
                 $this->removeLineByKeySearch('CType\(Me\..*, System\.ComponentModel\.ISupportInitialize\)\.EndInit\(\)', $file->getPathname(), true);
 
                 $this->removeLineByKeySearch('ImageList.+', $file->getPathname(), true);
+
+                $this->removeLineByKeySearch('Microsoft\.VisualBasic\.Compatibility\.VB6\.ToolStripMenuItemArray', $file->getPathname(), true);
             }
 
             if (preg_match('/^'.$programId.'.*\.vb/', $file->getFilename())) {
                 // For logic file
+                // $arrFileContent = file($file->getPathname());
+                // $tmpIdx = null;
+
+                // foreach ($arrFileContent as $key => $content) {
+                //     if (preg_match('/Friend Class frm'.$programId.'/', $content)) {
+
+                //     }
+                // }
+
                 File::replaceInFile('System.Windows.Forms.Form', 'Frm_Core', $file->getPathname());
+
+                $this->removeLineByKeySearch('UPGRADE_ISSUE', $file->getPathname(), true);
+                $this->removeLineByKeySearch('UPGRADE_WARNING', $file->getPathname(), true);
+                $this->removeLineByKeySearch('UPGRADE_NOTE', $file->getPathname(), true);
+
+                for ($idx = 0; $idx < 20; $idx++) {
+                    if (preg_match('/Parameters\('.$idx.'\)\.Value = System\.DBNull\.Value/', $file->getFilename())) {
+                        File::replaceInFile('Parameters('.$idx.')', 'Parameters.Add("@p'.$idx.'", SqlDbType.Text)', $file->getPathname());
+                    } else {
+                        File::replaceInFile('Parameters('.$idx.')', 'Parameters.Add("@p'.$idx.'", SqlDbType.Int)', $file->getPathname());
+                    }
+                }
+
+                File::replaceInFile('GoSub', 'GoTo', $file->getPathname());
+
+                $arrTBName = ['PRINT', 'PREVIEW', 'CANCEL', 'EXIT', 'EXEC', 'ROWDELETE', 'COPY'];
+                foreach ($arrTBName as $tbName) {
+                    File::replaceInFile('Toolbar1.Items.Item("'.$tbName.'").Enabled', 'tb'.$tbName.'.Enabled', $file->getPathname());
+                    File::replaceInFile('Case "'.$tbName.'"', 'Case "tb'.$tbName.'"', $file->getPathname());
+                }
+
+                for ($idx = 0; $idx < 10; $idx++) {
+                    File::replaceInFile('mnuFILEItem('.$idx.')', 'mnuFILEItem_'.$idx, $file->getPathname());
+                    File::replaceInFile('mnuEDITItem('.$idx.')', 'mnuEDITItem_'.$idx, $file->getPathname());
+
+                    File::replaceInFile('mnuFILEItem.Item('.$idx.')', 'mnuFILEItem_'.$idx, $file->getPathname());
+                    File::replaceInFile('mnuEDITItem.Item('.$idx.')', 'mnuEDITItem_'.$idx, $file->getPathname());
+                }
+
+                $this->removeLineByKeySearch('BEGIN TRAN', $file->getPathname(), true, 'dbCon2.BeginTransaction()');
+                $this->removeLineByKeySearch('COMMIT TRAN', $file->getPathname(), true, 'dbCon2.Commit()');
+                $this->removeLineByKeySearch('ROLLBACK TRAN', $file->getPathname(), true, 'dbCon2.Rollback()');
+
+                $this->removeLineByKeySearch('Dim Index As Short =', $file->getPathname(), true, 'Dim Index As Short = FormUtil.getControlPosition(eventSender)');
+
+                File::replaceInFile('CellCheck_Numeric(PGrid, ', 'CellCheck_Numeric(', $file->getPathname());
+                
             }
         }
 
         return 0;
     }
 
-    protected function removeLineByKeySearch($key, $path, $isRegex) {
+    protected function removeLineByKeySearch($keySearch, $path, $isRegex, $toString = '') {
         $arrFileContent = file($path);
 
         foreach ($arrFileContent as $content) {
             if ($isRegex) {
-                if (preg_match('/.*'.$key.'.*/', $content)) {
-                    File::replaceInFile($content, '', $path);
+                if (preg_match('/.*'.$keySearch.'.*/', $content)) {
+                    File::replaceInFile($content, $toString, $path);
                 }
             } else {
                 // without regex
