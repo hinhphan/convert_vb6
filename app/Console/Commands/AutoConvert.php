@@ -144,7 +144,7 @@ class AutoConvert extends Command
                 $this->removeLineByKeySearch('.*\.SetIndex\(.*, CType\(.+, Short\)\)', $file->getPathname(), true);
                 $this->removeLineByKeySearch('Me\.KeyPreview', $file->getPathname(), true);
 
-                File::replaceInFile('AxxComboLib.AxxCombo', 'CoreLib.ComboBoxL', $file->getPathname());
+                File::replaceInFile('AxxComboLib.AxxCombo', 'CoreLib.UltraComboE', $file->getPathname());
                 File::replaceInFile('AxxDropLib.AxxDrop', 'CoreLib.ComboBoxL', $file->getPathname());
                 File::replaceInFile('AxxLabelLib.AxxLabel', 'System.Windows.Forms.Label', $file->getPathname());
                 File::replaceInFile('AxxLabelLib.AxxLabelArray', 'System.Windows.Forms.Label', $file->getPathname());
@@ -172,6 +172,13 @@ class AutoConvert extends Command
                 $this->removeLineByKeySearch('ImageList.+', $file->getPathname(), true);
 
                 $this->removeLineByKeySearch('Microsoft\.VisualBasic\.Compatibility\.VB6\.ToolStripMenuItemArray', $file->getPathname(), true);
+
+                $this->removeLineByKeySearch('System\.Windows\.Forms\.ToolStripSeparator', $file->getPathname(), true);
+
+                $this->removeLineByKeySearch('CrDraw1', $file->getPathname(), true);
+
+                File::replaceInFile('Friend WithEvents lblNMGB As System.Windows.Forms.Label', 'Friend WithEvents lblNMGB As CoreLib.LabelFaculty', $file->getPathname());
+                File::replaceInFile('Me.lblNMGB = New System.Windows.Forms.Label', 'Me.lblNMGB = New CoreLib.LabelFaculty', $file->getPathname());
             }
 
             if (preg_match('/^'.$programId.'.*\.vb/', $file->getFilename())) {
@@ -191,8 +198,9 @@ class AutoConvert extends Command
                 $this->removeLineByKeySearch('UPGRADE_WARNING', $file->getPathname(), true);
                 $this->removeLineByKeySearch('UPGRADE_NOTE', $file->getPathname(), true);
 
-                for ($idx = 0; $idx < 20; $idx++) {
-                    if (preg_match('/Parameters\('.$idx.'\)\.Value = System\.DBNull\.Value/', $file->getFilename())) {
+                $fileContent = File::get($file->getPathname());
+                for ($idx = 0; $idx < 30; $idx++) {
+                    if (preg_match('/Parameters\('.$idx.'\)\.Value = System\.DBNull\.Value/', $fileContent)) {
                         File::replaceInFile('Parameters('.$idx.')', 'Parameters.Add("@p'.$idx.'", SqlDbType.Text)', $file->getPathname());
                     } else {
                         File::replaceInFile('Parameters('.$idx.')', 'Parameters.Add("@p'.$idx.'", SqlDbType.Int)', $file->getPathname());
@@ -222,7 +230,15 @@ class AutoConvert extends Command
                 $this->removeLineByKeySearch('Dim Index As Short =', $file->getPathname(), true, 'Dim Index As Short = FormUtil.getControlPosition(eventSender)');
 
                 File::replaceInFile('CellCheck_Numeric(PGrid, ', 'CellCheck_Numeric(', $file->getPathname());
-                
+
+                File::replaceInFile('VB6.Format(', 'Format(', $file->getPathname());
+                File::replaceInFile('yyyy/mm/dd', 'yyyy/MM/dd', $file->getPathname());
+                File::replaceInFile('hh:nn', 'hh:mm', $file->getPathname());
+
+                File::replaceInFile('CrDraw1', 'mCrDraw', $file->getPathname());
+
+                File::replaceInFile('.RecordCount', '.F ields("rCount").Value', $file->getPathname());
+
             }
         }
 
