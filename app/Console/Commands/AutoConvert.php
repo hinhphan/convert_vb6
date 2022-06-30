@@ -171,17 +171,16 @@ class AutoConvert extends Command
 
                 $this->removeLineByKeySearch('ImageList.+', $file->getPathname(), true);
 
-                $this->removeLineByKeySearch('Microsoft\.VisualBasic\.Compatibility\.VB6\.ToolStripMenuItemArray', $file->getPathname(), true);
+                // $this->removeLineByKeySearch('Microsoft\.VisualBasic\.Compatibility\.VB6\.ToolStripMenuItemArray', $file->getPathname(), true);
 
-                $this->removeLineByKeySearch('System\.Windows\.Forms\.ToolStripSeparator', $file->getPathname(), true);
+                // $this->removeLineByKeySearch('System\.Windows\.Forms\.ToolStripSeparator', $file->getPathname(), true);
 
                 $this->removeLineByKeySearch('CrDraw1', $file->getPathname(), true);
 
                 File::replaceInFile('Friend WithEvents lblNMGB As System.Windows.Forms.Label', 'Friend WithEvents lblNMGB As CoreLib.LabelFaculty', $file->getPathname());
                 File::replaceInFile('Me.lblNMGB = New System.Windows.Forms.Label', 'Me.lblNMGB = New CoreLib.LabelFaculty', $file->getPathname());
             }
-
-            if (preg_match('/^'.$programId.'.*\.vb/', $file->getFilename())) {
+            elseif (preg_match('/^'.$programId.'.*\.vb/', $file->getFilename())) {
                 // For logic file
                 // $arrFileContent = file($file->getPathname());
                 // $tmpIdx = null;
@@ -233,7 +232,7 @@ class AutoConvert extends Command
 
                 File::replaceInFile('VB6.Format(', 'Format(', $file->getPathname());
                 File::replaceInFile('yyyy/mm/dd', 'yyyy/MM/dd', $file->getPathname());
-                File::replaceInFile('hh:nn', 'hh:mm', $file->getPathname());
+                File::replaceInFile('hh:nn', 'HH:mm', $file->getPathname());
 
                 File::replaceInFile('CrDraw1', 'mCrDraw', $file->getPathname());
 
