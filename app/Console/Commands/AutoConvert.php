@@ -22,8 +22,8 @@ class AutoConvert extends Command
      */
     protected $description = 'Convert VB';
 
-    protected $dirDevenv = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\devenv.exe";
-    protected $dirVBNET = "D:\\XAMPP\\Convert_VB\\src\\src_VB.NET";
+    protected $dirDevenv = "";
+    protected $dirVBNET = "";
 
     /**
      * Execute the console command.
@@ -32,6 +32,9 @@ class AutoConvert extends Command
      */
     public function handle()
     {
+        $this->dirDevenv = env('DIR_DEVENV', "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\devenv.exe");
+        $this->dirVBNET = env('DIR_VBNET', "D:\\XAMPP\\Convert_VB\\src\\src_VB.NET");
+
         Log::debug("==============================Start auto convert==============================");
 
         $dirSource = $this->argument('dirSource');
