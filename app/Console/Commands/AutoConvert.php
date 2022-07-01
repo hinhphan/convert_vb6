@@ -132,8 +132,10 @@ class AutoConvert extends Command
                 File::replaceInFile('Public', 'Friend', $file->getPathname());
                 File::replaceInFile('Friend Sub New()', 'Public Sub New()', $file->getPathname());
                 $this->removeLineByKeySearch('\.OcxState', $file->getPathname(), true);
+
                 File::replaceInFile('_mnu', 'mnu', $file->getPathname());
                 File::replaceInFile('_opt', 'opt', $file->getPathname());
+                File::replaceInFile('_cmd', 'cmd', $file->getPathname());
 
                 $fileContent = File::get($file->getPathname());
                 for ($idx = 0; $idx < 10; $idx++) { 
@@ -174,7 +176,7 @@ class AutoConvert extends Command
 
                 $this->removeLineByKeySearch('ImageList.+', $file->getPathname(), true);
 
-                // $this->removeLineByKeySearch('Microsoft\.VisualBasic\.Compatibility\.VB6\.ToolStripMenuItemArray', $file->getPathname(), true);
+                $this->removeLineByKeySearch('Microsoft\.VisualBasic\.Compatibility\.VB6\.ToolStripMenuItemArray', $file->getPathname(), true);
 
                 // $this->removeLineByKeySearch('System\.Windows\.Forms\.ToolStripSeparator', $file->getPathname(), true);
 
@@ -182,6 +184,11 @@ class AutoConvert extends Command
 
                 File::replaceInFile('Friend WithEvents lblNMGB As System.Windows.Forms.Label', 'Friend WithEvents lblNMGB As CoreLib.LabelFaculty', $file->getPathname());
                 File::replaceInFile('Me.lblNMGB = New System.Windows.Forms.Label', 'Me.lblNMGB = New CoreLib.LabelFaculty', $file->getPathname());
+
+                File::replaceInFile('Friend WithEvents cboCDGK As CoreLib.ComboBoxL', 'Friend WithEvents cboCDGK As CoreLib.UltraComboE', $file->getPathname());
+                File::replaceInFile('Me.cboCDGK = New CoreLib.ComboBoxL()', 'Me.cboCDGK = New CoreLib.UltraComboE()', $file->getPathname());
+
+
             }
             elseif (preg_match('/^'.$programId.'.*\.vb/', $file->getFilename())) {
                 // For logic file
@@ -209,7 +216,7 @@ class AutoConvert extends Command
                     }
                 }
 
-                //File::replaceInFile('GoSub', 'GoTo', $file->getPathname());
+                File::replaceInFile('GoSub', 'GoTo', $file->getPathname());
 
                 $arrTBName = ['PRINT', 'PREVIEW', 'CANCEL', 'EXIT', 'EXEC', 'ROWDELETE', 'COPY'];
                 foreach ($arrTBName as $tbName) {
@@ -231,9 +238,13 @@ class AutoConvert extends Command
 
                 $this->removeLineByKeySearch('Dim Index As Short =', $file->getPathname(), true, 'Dim Index As Short = FormUtil.getControlPosition(eventSender)');
 
-                File::replaceInFile('CellCheck_Numeric(PGrid, ', 'CellCheck_Numeric(', $file->getPathname());
+                // File::replaceInFile('CellCheck_Numeric(PGrid, ', 'CellCheck_Numeric(', $file->getPathname()); //Sai khi co cac man nhieu grid tren 1 man @@
 
                 File::replaceInFile('VB6.Format(', 'Format(', $file->getPathname());
+                File::replaceInFile('VB6.TwipsToPixelsY(', 'TwipsToPixelsY(Me, ', $file->getPathname());
+                File::replaceInFile('VB6.TwipsToPixelsX(', 'TwipsToPixelsX(Me, ', $file->getPathname());
+                File::replaceInFile('VB6.PixelsToTwipsX(', 'PixelsToTwipsX(Me, ', $file->getPathname());
+                File::replaceInFile('VB6.PixelsToTwipsY(', 'PixelsToTwipsY(Me, ', $file->getPathname());
                 File::replaceInFile('yyyy/mm/dd', 'yyyy/MM/dd', $file->getPathname());
                 File::replaceInFile('hh:nn', 'HH:mm', $file->getPathname());
 
@@ -252,7 +263,7 @@ class AutoConvert extends Command
 
         foreach ($arrFileContent as $content) {
             if ($isRegex) {
-                if (preg_match('/.*'.$keySearch.'.*/', $content)) {
+                if (preg_match('/.*'.$keySearch.'.*/', $content)) { //cho nay nen bo regex 2 ben mac dinh di
                     File::replaceInFile($content, $toString, $path);
                 }
             } else {
