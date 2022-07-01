@@ -209,7 +209,7 @@ class AutoConvert extends Command
                     }
                 }
 
-                File::replaceInFile('GoSub', 'GoTo', $file->getPathname());
+                //File::replaceInFile('GoSub', 'GoTo', $file->getPathname());
 
                 $arrTBName = ['PRINT', 'PREVIEW', 'CANCEL', 'EXIT', 'EXEC', 'ROWDELETE', 'COPY'];
                 foreach ($arrTBName as $tbName) {
