@@ -208,7 +208,7 @@ class AutoConvert extends Command
                 $this->removeLineByKeySearch('UPGRADE_NOTE', $file->getPathname(), true);
 
                 $fileContent = File::get($file->getPathname());
-                for ($idx = 0; $idx < 30; $idx++) {
+                for ($idx = 0; $idx < 100; $idx++) {
                     if (preg_match('/Parameters\('.$idx.'\)\.Value = System\.DBNull\.Value/', $fileContent)) {
                         File::replaceInFile('Parameters('.$idx.')', 'Parameters.Add("@p'.$idx.'", SqlDbType.Text)', $file->getPathname());
                     } else {
