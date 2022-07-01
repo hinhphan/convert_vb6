@@ -218,7 +218,7 @@ class AutoConvert extends Command
 
                 File::replaceInFile('GoSub', 'GoTo', $file->getPathname());
 
-                $arrTBName = ['PRINT', 'PREVIEW', 'CANCEL', 'EXIT', 'EXEC', 'ROWDELETE', 'COPY'];
+                $arrTBName = ['PRINT', 'PREVIEW', 'CANCEL', 'EXIT', 'EXEC', 'ROWDELETE', 'COPY', 'ROWINSERT'];
                 foreach ($arrTBName as $tbName) {
                     File::replaceInFile('Toolbar1.Items.Item("'.$tbName.'").Enabled', 'tb'.$tbName.'.Enabled', $file->getPathname());
                     File::replaceInFile('Case "'.$tbName.'"', 'Case "tb'.$tbName.'"', $file->getPathname());
@@ -245,12 +245,15 @@ class AutoConvert extends Command
                 File::replaceInFile('VB6.TwipsToPixelsX(', 'TwipsToPixelsX(Me, ', $file->getPathname());
                 File::replaceInFile('VB6.PixelsToTwipsX(', 'PixelsToTwipsX(Me, ', $file->getPathname());
                 File::replaceInFile('VB6.PixelsToTwipsY(', 'PixelsToTwipsY(Me, ', $file->getPathname());
+                File::replaceInFile('VB6.TwipsPerPixelX', 'TwipsPerPixelX(Me)', $file->getPathname());
                 File::replaceInFile('yyyy/mm/dd', 'yyyy/MM/dd', $file->getPathname());
                 File::replaceInFile('hh:nn', 'HH:mm', $file->getPathname());
 
                 File::replaceInFile('CrDraw1', 'mCrDraw', $file->getPathname());
 
                 File::replaceInFile('.RecordCount', '.F ields("rCount").Value', $file->getPathname());
+
+                File::replaceInFile('.set_CellEnabled(', '.set_CellEnable(', $file->getPathname());
 
             }
         }
