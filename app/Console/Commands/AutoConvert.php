@@ -255,6 +255,8 @@ class AutoConvert extends Command
 
                 File::replaceInFile('.set_CellEnabled(', '.set_CellEnable(', $file->getPathname());
 
+                $this->replaceQestionMarkToText($file->getPathname());
+
             }
         }
 
@@ -274,5 +276,43 @@ class AutoConvert extends Command
 
             }
         }
+    }
+
+    protected function replaceQestionMarkToText($path) {
+        $arrFileContent = file($path);
+
+        $start = 0;
+        $arrCheckToResetStart = ['delete', 'select', 'insert', 'update'];
+        $countQuestionMark = substr_count(file_get_contents($path), '?');
+
+        foreach ($arrFileContent as $fileContent) {
+            $newFileContent = $fileContent;
+
+            foreach ($arrCheckToResetStart as $itemCheckToResetStart) {
+                if (strpos($fileContent, $itemCheckToResetStart) !== false) {
+                    $start = 0;
+                }
+            }
+
+            while (strpos($newFileContent, '?') !== false) {
+                $newFileContent = preg_replace('/\?/', '@p'.$start, $newFileContent, 1);
+
+                $start++;
+                $countQuestionMark--;
+            }
+
+            if ($fileContent != $newFileContent) {
+                $this->replaceInFileWithRegex($fileContent, $newFileContent, $path);
+            }
+
+            if ($countQuestionMark <= 0) {
+                break;
+            }
+        }
+    }
+
+    protected function replaceInFileWithRegex($search, $replace, $path)
+    {
+        file_put_contents($path, preg_replace('/'.preg_quote($search, '/').'/', $replace, file_get_contents($path), 1));
     }
 }
