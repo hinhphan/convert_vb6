@@ -136,6 +136,8 @@ class AutoConvert extends Command
                 File::replaceInFile('_mnu', 'mnu', $file->getPathname());
                 File::replaceInFile('_opt', 'opt', $file->getPathname());
                 File::replaceInFile('_cmd', 'cmd', $file->getPathname());
+                File::replaceInFile('_xLabel', 'xLabel', $file->getPathname());
+                File::replaceInFile('_lbl', 'lbl', $file->getPathname());
 
                 $fileContent = File::get($file->getPathname());
                 for ($idx = 0; $idx < 10; $idx++) { 
@@ -186,7 +188,7 @@ class AutoConvert extends Command
                 File::replaceInFile('Me.lblNMGB = New System.Windows.Forms.Label', 'Me.lblNMGB = New CoreLib.LabelFaculty', $file->getPathname());
 
                 File::replaceInFile('Friend WithEvents cboCDGK As CoreLib.ComboBoxL', 'Friend WithEvents cboCDGK As CoreLib.UltraComboE', $file->getPathname());
-                File::replaceInFile('Me.cboCDGK = New CoreLib.ComboBoxL()', 'Me.cboCDGK = New CoreLib.UltraComboE()', $file->getPathname());
+                File::replaceInFile('Me.cboCDGK = New CoreLib.ComboBoxL', 'Me.cboCDGK = New CoreLib.UltraComboE', $file->getPathname()); // Check lai thang nay dang chay khong dung
 
 
             }
@@ -207,6 +209,8 @@ class AutoConvert extends Command
                 $this->removeLineByKeySearch('UPGRADE_WARNING', $file->getPathname(), true);
                 $this->removeLineByKeySearch('UPGRADE_NOTE', $file->getPathname(), true);
 
+
+                // Do khong có phần đầu của Parameters nên nó bị ảnh hưởng bởi các Cmd khác không phải bản thân nó @@ => cần fix
                 $fileContent = File::get($file->getPathname());
                 for ($idx = 0; $idx < 100; $idx++) {
                     if (preg_match('/Parameters\('.$idx.'\)\.Value = System\.DBNull\.Value/', $fileContent)) {
@@ -218,7 +222,7 @@ class AutoConvert extends Command
 
                 File::replaceInFile('GoSub', 'GoTo', $file->getPathname());
 
-                $arrTBName = ['PRINT', 'PREVIEW', 'CANCEL', 'EXIT', 'EXEC', 'ROWDELETE', 'COPY', 'ROWINSERT'];
+                $arrTBName = ['PRINT', 'PREVIEW', 'CANCEL', 'EXIT', 'EXEC', 'ROWDELETE', 'COPY', 'ROWINSERT', 'EXCEL'];
                 foreach ($arrTBName as $tbName) {
                     File::replaceInFile('Toolbar1.Items.Item("'.$tbName.'").Enabled', 'tb'.$tbName.'.Enabled', $file->getPathname());
                     File::replaceInFile('Case "'.$tbName.'"', 'Case "tb'.$tbName.'"', $file->getPathname());
@@ -232,11 +236,11 @@ class AutoConvert extends Command
                     File::replaceInFile('mnuEDITItem.Item('.$idx.')', 'mnuEDITItem_'.$idx, $file->getPathname());
                 }
 
-                $this->removeLineByKeySearch('BEGIN TRAN', $file->getPathname(), true, 'dbCon2.BeginTransaction()');
-                $this->removeLineByKeySearch('COMMIT TRAN', $file->getPathname(), true, 'dbCon2.Commit()');
-                $this->removeLineByKeySearch('ROLLBACK TRAN', $file->getPathname(), true, 'dbCon2.Rollback()');
+                $this->removeLineByKeySearch('BEGIN TRAN', $file->getPathname(), true, 'dbCon2.BeginTransaction()' . PHP_EOL);
+                $this->removeLineByKeySearch('COMMIT TRAN', $file->getPathname(), true, 'dbCon2.Commit()' . PHP_EOL);
+                $this->removeLineByKeySearch('ROLLBACK TRAN', $file->getPathname(), true, 'dbCon2.Rollback()' . PHP_EOL);
 
-                $this->removeLineByKeySearch('Dim Index As Short =', $file->getPathname(), true, 'Dim Index As Short = FormUtil.getControlPosition(eventSender)');
+                $this->removeLineByKeySearch('Dim Index As Short =', $file->getPathname(), true, 'Dim Index As Short = FormUtil.getControlPosition(eventSender)' . PHP_EOL);
 
                 // File::replaceInFile('CellCheck_Numeric(PGrid, ', 'CellCheck_Numeric(', $file->getPathname()); //Sai khi co cac man nhieu grid tren 1 man @@
 
@@ -257,6 +261,8 @@ class AutoConvert extends Command
 
                 $this->replaceQestionMarkToText($file->getPathname());
 
+                File::replaceInFile('Private mCrForm As CoReports.CrForm', 'Private mCrForm As CrForm' . PHP_EOL . 'Private mCrDraw As CrDraw', $file->getPathname());
+                File::replaceInFile('If pFncVal <> 0 Then', 'If FormUtil.isPrtEndError(pFncVal) Then', $file->getPathname());
             }
         }
 
