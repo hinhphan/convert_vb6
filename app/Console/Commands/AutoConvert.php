@@ -203,7 +203,7 @@ class AutoConvert extends Command
                 //     }
                 // }
 
-                File::replaceInFile('System.Windows.Forms.Form', 'Frm_Core', $file->getPathname());
+                $this->replaceInFileWithRegex('System.Windows.Forms.Form', 'Frm_Core', $file->getPathname());
 
                 $this->removeLineByKeySearch('UPGRADE_ISSUE', $file->getPathname(), true);
                 $this->removeLineByKeySearch('UPGRADE_WARNING', $file->getPathname(), true);
