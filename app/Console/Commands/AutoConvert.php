@@ -114,12 +114,16 @@ class AutoConvert extends Command
         }
 
         Log::debug("Copy file Bas_");
-        if (!File::copy($this->dirVBNET . DIRECTORY_SEPARATOR . 'Bas_Template.vb', $this->dirVBNET . DIRECTORY_SEPARATOR . $programId . DIRECTORY_SEPARATOR . 'Bas_'.$programId.'.vb')) {
+        $dirFileBas = $this->dirVBNET . DIRECTORY_SEPARATOR . $programId . DIRECTORY_SEPARATOR . 'Bas_'.$programId.'.vb';
+        if (!File::copy($this->dirVBNET . DIRECTORY_SEPARATOR . 'Bas_Template.vb', $dirFileBas)) {
             Log::debug("Copy file Bas_ error");
         }
 
-        // Log::debug("Edit file Bas_");
-        // File::replaceInFile(['[繝励Ο繧ｰ繝ｩ繝?ID]'], $programId, $this->dirVBNET . DIRECTORY_SEPARATOR . $programId . DIRECTORY_SEPARATOR . 'Bas_'.$programId.'.vb');
+        Log::debug("Edit file Bas_");
+        File::replaceInFile(['[プログラムID]'], $programId, $dirFileBas);
+        // $formName = $this->ask('What is your form name?');
+        // File::replaceInFile(['機能名　標準モジュール'], $formName, $dirFileBas);
+        // File::replaceInFile(['[プログラム名]'], $formName, $dirFileBas);
         
         // Free replace
         $files = collect(File::allFiles($dirVBNETProject, true));
@@ -203,14 +207,18 @@ class AutoConvert extends Command
 
                         if (preg_match('/'.preg_quote('Imports VB = Microsoft.VisualBasic', '/').'/', $arrFileContent[$key + 1])) {
                             $fromText = $arrFileContent[$key + 1];
-                            $toText = $arrFileContent[$key + 1] . 'Imports CoreLib' . PHP_EOL . 'Imports CoreNS' . PHP_EOL;
+                            $toText = $arrFileContent[$key + 1] . 'Imports CoreLib' . $this->createEnter() . 'Imports CoreNS' . $this->createEnter();
                         } else {
                             $fromText = $arrFileContent[$key];
-                            $toText = $arrFileContent[$key] . 'Imports VB = Microsoft.VisualBasic' . PHP_EOL . 'Imports CoreLib' . PHP_EOL . 'Imports CoreNS' . PHP_EOL;
+                            $toText = $arrFileContent[$key] . 'Imports VB = Microsoft.VisualBasic' . $this->createEnter() . 'Imports CoreLib' . $this->createEnter() . 'Imports CoreNS' . $this->createEnter();
                         }
 
                         if (preg_match('/mPRNDevice/', file_get_contents($file->getPathname()))) {
-                            $toText = $toText . 'Imports CoReportsCoreU' . PHP_EOL . 'Imports CoReportsU' . PHP_EOL . PHP_EOL;
+                            $toText = $toText . 'Imports CoReportsCoreU' . $this->createEnter() . 'Imports CoReportsU' . $this->createEnter(2);
+                        }
+
+                        if (preg_match('/\?/', file_get_contents($file->getPathname()))) {
+                            $toText = $toText . 'Imports System.Data' . $this->createEnter(2);
                         }
 
                         $this->replaceInFileWithRegex($fromText, $toText, $file->getPathname());
@@ -252,11 +260,11 @@ class AutoConvert extends Command
                     File::replaceInFile('mnuEDITItem.Item('.$idx.')', 'mnuEDITItem_'.$idx, $file->getPathname());
                 }
 
-                $this->removeLineByKeySearch('BEGIN TRAN', $file->getPathname(), true, 'dbCon2.BeginTransaction()' . PHP_EOL);
-                $this->removeLineByKeySearch('COMMIT TRAN', $file->getPathname(), true, 'dbCon2.Commit()' . PHP_EOL);
-                $this->removeLineByKeySearch('ROLLBACK TRAN', $file->getPathname(), true, 'dbCon2.Rollback()' . PHP_EOL);
+                $this->removeLineByKeySearch('BEGIN TRAN', $file->getPathname(), true, 'dbCon2.BeginTransaction()' . $this->createEnter());
+                $this->removeLineByKeySearch('COMMIT TRAN', $file->getPathname(), true, 'dbCon2.Commit()' . $this->createEnter());
+                $this->removeLineByKeySearch('ROLLBACK TRAN', $file->getPathname(), true, 'dbCon2.Rollback()' . $this->createEnter());
 
-                $this->removeLineByKeySearch('Dim Index As Short =', $file->getPathname(), true, 'Dim Index As Short = FormUtil.getControlPosition(eventSender)' . PHP_EOL);
+                $this->removeLineByKeySearch('Dim Index As Short =', $file->getPathname(), true, 'Dim Index As Short = FormUtil.getControlPosition(eventSender)' . $this->createEnter());
 
                 // File::replaceInFile('CellCheck_Numeric(PGrid, ', 'CellCheck_Numeric(', $file->getPathname()); //Sai khi co cac man nhieu grid tren 1 man @@
 
@@ -277,14 +285,14 @@ class AutoConvert extends Command
 
                 $this->replaceQestionMarkToText($file->getPathname());
 
-                File::replaceInFile('Private mCrForm As CoReports.CrForm', 'Private mCrForm As CrForm' . PHP_EOL . $this->createTab() . 'Private mCrDraw As CrDraw', $file->getPathname());
+                File::replaceInFile('Private mCrForm As CoReports.CrForm', 'Private mCrForm As CrForm' . $this->createEnter() . $this->createTab() . 'Private mCrDraw As CrDraw', $file->getPathname());
                 File::replaceInFile('If pFncVal <> 0 Then', 'If FormUtil.isPrtEndError(pFncVal) Then', $file->getPathname());
 
                 File::replaceInFile('AxPGRIDLib.AxPerfectGrid', 'CoreLib.UltraGridP', $file->getPathname());
                 File::replaceInFile('AxxCBtnLib.AxxCmdBtn', 'CoreLib.ButtonS', $file->getPathname());
                 File::replaceInFile('AxxLabelLib.AxxLabel', 'System.Windows.Forms.Label', $file->getPathname());
 
-                $this->replaceInFileWithRegex('pBytes = LenB(StrConv(pPGrid.get_CellText(Row, Col), vbFromUnicode))', 'Dim sutil As StringUtil = New StringUtil(StringUtil.ENC_SHIFTJIS)' . PHP_EOL . $this->createTab(2) . 'pBytes = sutil.getByteCount(pPGrid.get_CellText(Row, Col))' . PHP_EOL, $file->getPathname());
+                $this->replaceInFileWithRegex('pBytes = LenB(StrConv(pPGrid.get_CellText(Row, Col), vbFromUnicode))', 'Dim sutil As StringUtil = New StringUtil(StringUtil.ENC_SHIFTJIS)' . $this->createEnter() . $this->createTab(2) . 'pBytes = sutil.getByteCount(pPGrid.get_CellText(Row, Col))' . $this->createEnter(), $file->getPathname());
 
                 $this->appendTextToFunction('frm'.$programId.'_Load', $this->createTab(2) .'ImageListUtil.setToolStripImage(Toolbar1)', $file->getPathname(), 'mMBOXTitle = Me.Text');
 
@@ -292,7 +300,35 @@ class AutoConvert extends Command
                 File::replaceInFile('Handles Me.FormClosed', 'Handles Me.FormClosing', $file->getPathname());
 
                 if (!preg_match('/'.preg_quote('If mnuFILEItem_9.Enabled = False Then', '/').'/', file_get_contents($file->getPathname()))) {
-                    $this->appendTextToFunction('frm'.$programId.'_FormClosed', $this->createTab(2) . 'If mnuFILEItem_9.Enabled = False Then' . PHP_EOL . $this->createTab(3) . 'mMsgText = "登録処理中です。終了できません。"' . PHP_EOL . $this->createTab(3) . 'MsgBox(mMsgText, MsgBoxStyle.OkOnly + MsgBoxStyle.Exclamation,mMBOXTitle)' . PHP_EOL . $this->createTab(3) . 'eventArgs.Cancel = True' . PHP_EOL . $this->createTab(3) . 'Exit Sub' . PHP_EOL . $this->createTab(2) . 'End if' . PHP_EOL, $file->getPathname(), 'Sub frm'.$programId.'_FormClosed');
+                    $this->appendTextToFunction('frm'.$programId.'_FormClosed', $this->createTab(2) . 'If mnuFILEItem_9.Enabled = False Then' . $this->createEnter() . $this->createTab(3) . 'mMsgText = "登録処理中です。終了できません。"' . $this->createEnter() . $this->createTab(3) . 'MsgBox(mMsgText, MsgBoxStyle.OkOnly + MsgBoxStyle.Exclamation,mMBOXTitle)' . $this->createEnter() . $this->createTab(3) . 'eventArgs.Cancel = True' . $this->createEnter() . $this->createTab(3) . 'Exit Sub' . $this->createEnter() . $this->createTab(2) . 'End if' . $this->createEnter(), $file->getPathname(), 'Sub frm'.$programId.'_FormClosed');
+                }
+
+                // Add dbCmd, dbRec -> Bas_
+                $matchesDbCmd = null;
+                $matchesDbRec = null;
+
+                if (preg_match_all('/^\s*(dbCmd\S*?)\./im', file_get_contents($file->getPathname()), $matchesDbCmd)) {
+                    $matchesDbCmd = array_unique($matchesDbCmd[1]);
+                    
+                    foreach ($matchesDbCmd as $matchDbCmd) {
+                        if (!preg_match('/' . $matchDbCmd . '/', file_get_contents($dirFileBas))) {
+                            $this->removeLineByKeySearch(preg_quote('Public dbCmdUPD As CoreLib.ADODB.Command', '/'), $dirFileBas, true, $this->createTab().'Public dbCmdUPD As CoreLib.ADODB.Command' . $this->createEnter() . $this->createTab(). 'Public '.$matchDbCmd.' As CoreLib.ADODB.Command' . $this->createEnter());
+                            $this->removeLineByKeySearch(preg_quote('If Not dbCmdUPD Is Nothing Then dbCmdUPD.Dispose()', '/'), $dirFileBas, true, $this->createTab(3).'If Not dbCmdUPD Is Nothing Then dbCmdUPD.Dispose()' . $this->createEnter() . $this->createTab(3). 'If Not '.$matchDbCmd.' Is Nothing Then '.$matchDbCmd.'.Dispose()' . $this->createEnter());
+                            $this->removeLineByKeySearch(preg_quote('dbCmdUPD = Nothing', '/'), $dirFileBas, true, $this->createTab(3).'dbCmdUPD = Nothing' . $this->createEnter() . $this->createTab(3). $matchDbCmd . ' = Nothing' . $this->createEnter());
+                        }
+                    }
+                }
+
+                if (preg_match_all('/^\s*(dbRec\S*?)\./im', file_get_contents($file->getPathname()), $matchesDbRec)) {
+                    $matchesDbRec = array_unique($matchesDbRec[1]);
+                    
+                    foreach ($matchesDbRec as $matchDbRec) {
+                        if (!preg_match('/' . $matchDbRec . '/', file_get_contents($dirFileBas))) {
+                            $this->removeLineByKeySearch(preg_quote('Public dbCmdUPD As CoreLib.ADODB.Command', '/'), $dirFileBas, true, $this->createTab().'Public dbCmdUPD As CoreLib.ADODB.Command' . $this->createEnter() . $this->createTab(). 'Public '.$matchDbRec.' As CoreLib.ADODB.Recordset' . $this->createEnter());
+                            $this->removeLineByKeySearch(preg_quote('If Not dbCmdUPD Is Nothing Then dbCmdUPD.Dispose()', '/'), $dirFileBas, true, $this->createTab(3).'If Not dbCmdUPD Is Nothing Then dbCmdUPD.Dispose()' . $this->createEnter() . $this->createTab(3). 'If Not '.$matchDbRec.' Is Nothing Then '.$matchDbRec.'.Close()' . $this->createEnter());
+                            $this->removeLineByKeySearch(preg_quote('dbCmdUPD = Nothing', '/'), $dirFileBas, true, $this->createTab(3).'dbCmdUPD = Nothing' . $this->createEnter() . $this->createTab(3). $matchDbRec . ' = Nothing' . $this->createEnter());
+                        }
+                    }
                 }
 
             }
@@ -303,6 +339,10 @@ class AutoConvert extends Command
 
     protected function createTab($num = 1) {
         return str_repeat(chr(9), $num);
+    }
+
+    protected function createEnter($num = 1) {
+        return str_repeat(PHP_EOL, $num);
     }
 
     protected function removeLineByKeySearch($keySearch, $path, $isRegex, $toString = '') {
@@ -383,7 +423,7 @@ class AutoConvert extends Command
             if ($startFunc) {
                 if ($afterText !== null) {
                     if (preg_match('/'.preg_quote($afterText, '/').'/', $content)) {
-                        $this->replaceInFileWithRegex($arrFileContent[$key - 2] . $arrFileContent[$key - 1] . $arrFileContent[$key], $arrFileContent[$key - 2] . $arrFileContent[$key - 1] . $arrFileContent[$key] . $textAppend . PHP_EOL, $path);
+                        $this->replaceInFileWithRegex($arrFileContent[$key - 2] . $arrFileContent[$key - 1] . $arrFileContent[$key], $arrFileContent[$key - 2] . $arrFileContent[$key - 1] . $arrFileContent[$key] . $textAppend . $this->createEnter(), $path);
                         $startFunc = false;
                     }
                 } else {
