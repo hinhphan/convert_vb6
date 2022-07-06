@@ -88,7 +88,7 @@ class AutoConvert extends Command
 
         $newVBProjPath = $this->dirVBNET . DIRECTORY_SEPARATOR . $programId . DIRECTORY_SEPARATOR . $programId.".vbproj";
 
-        // 2-4. [プログラムID].vbproj.userを削除する。
+        // 2-4. [プログラ�?ID].vbproj.userを削除する�?
         Log::debug("Delete file ".$programId.".vbproj.user");
         
         if (!File::delete($this->dirVBNET . DIRECTORY_SEPARATOR . $programId . DIRECTORY_SEPARATOR . $programId.".vbproj.user")) {
@@ -119,7 +119,7 @@ class AutoConvert extends Command
         }
 
         // Log::debug("Edit file Bas_");
-        // File::replaceInFile(['[プログラムID]'], $programId, $this->dirVBNET . DIRECTORY_SEPARATOR . $programId . DIRECTORY_SEPARATOR . 'Bas_'.$programId.'.vb');
+        // File::replaceInFile(['[プログラ�?ID]'], $programId, $this->dirVBNET . DIRECTORY_SEPARATOR . $programId . DIRECTORY_SEPARATOR . 'Bas_'.$programId.'.vb');
         
         // Free replace
         $files = collect(File::allFiles($dirVBNETProject, true));
@@ -194,14 +194,30 @@ class AutoConvert extends Command
             }
             elseif (preg_match('/^'.$programId.'.*\.vb/', $file->getFilename())) {
                 // For logic file
-                // $arrFileContent = file($file->getPathname());
-                // $tmpIdx = null;
+                $arrFileContent = file($file->getPathname());
 
-                // foreach ($arrFileContent as $key => $content) {
-                //     if (preg_match('/Friend Class frm'.$programId.'/', $content)) {
+                foreach ($arrFileContent as $key => $content) {
+                    if (preg_match('/Option Explicit On/', $content)) {
+                        $fromText = '';
+                        $toText = '';
 
-                //     }
-                // }
+                        if (preg_match('/'.preg_quote('Imports VB = Microsoft.VisualBasic', '/').'/', $arrFileContent[$key + 1])) {
+                            $fromText = $arrFileContent[$key + 1];
+                            $toText = $arrFileContent[$key + 1] . 'Imports CoreLib' . PHP_EOL . 'Imports CoreNS' . PHP_EOL;
+                        } else {
+                            $fromText = $arrFileContent[$key];
+                            $toText = $arrFileContent[$key] . 'Imports VB = Microsoft.VisualBasic' . PHP_EOL . 'Imports CoreLib' . PHP_EOL . 'Imports CoreNS' . PHP_EOL;
+                        }
+
+                        if (preg_match('/mPRNDevice/', file_get_contents($file->getPathname()))) {
+                            $toText = $toText . 'Imports CoReportsCoreU' . PHP_EOL . 'Imports CoReportsU' . PHP_EOL . PHP_EOL;
+                        }
+
+                        $this->replaceInFileWithRegex($fromText, $toText, $file->getPathname());
+
+                        break;
+                    }
+                }
 
                 $this->replaceInFileWithRegex('System.Windows.Forms.Form', 'Frm_Core', $file->getPathname());
 
@@ -210,7 +226,7 @@ class AutoConvert extends Command
                 $this->removeLineByKeySearch('UPGRADE_NOTE', $file->getPathname(), true);
 
 
-                // Do khong có phần đầu của Parameters nên nó bị ảnh hưởng bởi các Cmd khác không phải bản thân nó @@ => cần fix
+                // Do khong có phần đầu của Parameters nên nó b�? ảnh hưởng bởi các Cmd khác không phải bản thân nó @@ => cần fix
                 $fileContent = File::get($file->getPathname());
                 for ($idx = 0; $idx < 100; $idx++) {
                     if (preg_match('/Parameters\('.$idx.'\)\.Value = System\.DBNull\.Value/', $fileContent)) {
@@ -261,18 +277,43 @@ class AutoConvert extends Command
 
                 $this->replaceQestionMarkToText($file->getPathname());
 
-                File::replaceInFile('Private mCrForm As CoReports.CrForm', 'Private mCrForm As CrForm' . PHP_EOL . 'Private mCrDraw As CrDraw', $file->getPathname());
+                File::replaceInFile('Private mCrForm As CoReports.CrForm', 'Private mCrForm As CrForm' . PHP_EOL . $this->createTab() . 'Private mCrDraw As CrDraw', $file->getPathname());
                 File::replaceInFile('If pFncVal <> 0 Then', 'If FormUtil.isPrtEndError(pFncVal) Then', $file->getPathname());
+
+                File::replaceInFile('AxPGRIDLib.AxPerfectGrid', 'CoreLib.UltraGridP', $file->getPathname());
+                File::replaceInFile('AxxCBtnLib.AxxCmdBtn', 'CoreLib.ButtonS', $file->getPathname());
+                File::replaceInFile('AxxLabelLib.AxxLabel', 'System.Windows.Forms.Label', $file->getPathname());
+
+                $this->replaceInFileWithRegex('pBytes = LenB(StrConv(pPGrid.get_CellText(Row, Col), vbFromUnicode))', 'Dim sutil As StringUtil = New StringUtil(StringUtil.ENC_SHIFTJIS)' . PHP_EOL . $this->createTab(2) . 'pBytes = sutil.getByteCount(pPGrid.get_CellText(Row, Col))' . PHP_EOL, $file->getPathname());
+
+                $this->appendTextToFunction('frm'.$programId.'_Load', $this->createTab(2) .'ImageListUtil.setToolStripImage(Toolbar1)', $file->getPathname(), 'mMBOXTitle = Me.Text');
+
+                File::replaceInFile('ByVal eventArgs As System.Windows.Forms.FormClosedEventArgs', 'ByVal eventArgs As System.Windows.Forms.FormClosingEventArgs', $file->getPathname());
+                File::replaceInFile('Handles Me.FormClosed', 'Handles Me.FormClosing', $file->getPathname());
+
+                if (!preg_match('/'.preg_quote('If mnuFILEItem_9.Enabled = False Then', '/').'/', file_get_contents($file->getPathname()))) {
+                    $this->appendTextToFunction('frm'.$programId.'_FormClosed', $this->createTab(2) . 'If mnuFILEItem_9.Enabled = False Then' . PHP_EOL . $this->createTab(3) . 'mMsgText = "�o�^�������ł��B�I���ł��܂���B"' . PHP_EOL . $this->createTab(3) . 'MsgBox(mMsgText, MsgBoxStyle.OkOnly + MsgBoxStyle.Exclamation,mMBOXTitle)' . PHP_EOL . $this->createTab(3) . 'eventArgs.Cancel = True' . PHP_EOL . $this->createTab(3) . 'Exit Sub' . PHP_EOL . $this->createTab(2) . 'End if' . PHP_EOL, $file->getPathname(), 'Sub frm'.$programId.'_FormClosed');
+                }
+
             }
         }
 
         return 0;
     }
 
+    protected function createTab($num = 1) {
+        return str_repeat(chr(9), $num);
+    }
+
     protected function removeLineByKeySearch($keySearch, $path, $isRegex, $toString = '') {
         $arrFileContent = file($path);
+        $exceptText = ['UPGRADE_ISSUE', 'UPGRADE_WARNING', 'UPGRADE_NOTE'];
 
         foreach ($arrFileContent as $content) {
+            if (preg_match('/^\s*\'.*/', $content) && !in_array($keySearch, $exceptText)) {
+                continue;
+            }
+
             if ($isRegex) {
                 if (preg_match('/.*'.$keySearch.'.*/', $content)) { //cho nay nen bo regex 2 ben mac dinh di
                     File::replaceInFile($content, $toString, $path);
@@ -292,6 +333,10 @@ class AutoConvert extends Command
         $countQuestionMark = substr_count(file_get_contents($path), '?');
 
         foreach ($arrFileContent as $fileContent) {
+            if (preg_match('/^\s*\'.*/', $fileContent)) {
+                continue;
+            }
+
             $newFileContent = $fileContent;
 
             foreach ($arrCheckToResetStart as $itemCheckToResetStart) {
@@ -320,5 +365,41 @@ class AutoConvert extends Command
     protected function replaceInFileWithRegex($search, $replace, $path)
     {
         file_put_contents($path, preg_replace('/'.preg_quote($search, '/').'/', $replace, file_get_contents($path), 1));
+    }
+
+    protected function appendTextToFunction($nameFunc, $textAppend, $path, $afterText = null) {
+        $arrFileContent = file($path);
+        $startFunc = false;
+
+        foreach ($arrFileContent as $key => $content) {
+            if (preg_match('/^\s*\'.*/', $content)) {
+                continue;
+            }
+
+            if (preg_match('/'.preg_quote('Sub ' . $nameFunc, '/').'/', $content)) {
+                $startFunc = true;
+            }
+
+            if ($startFunc) {
+                if ($afterText !== null) {
+                    if (preg_match('/'.preg_quote($afterText, '/').'/', $content)) {
+                        $this->replaceInFileWithRegex($arrFileContent[$key - 2] . $arrFileContent[$key - 1] . $arrFileContent[$key], $arrFileContent[$key - 2] . $arrFileContent[$key - 1] . $arrFileContent[$key] . $textAppend . PHP_EOL, $path);
+                        $startFunc = false;
+                    }
+                } else {
+                    // End func : chua xu li
+                    
+                }
+
+                if (preg_match('/End Sub/', $content)) {
+                    $startFunc = false;
+                    break;
+                }
+            }
+        }
+    }
+
+    protected function replaceFunctionToText($nameFunc, $textReplace, $path) {
+
     }
 }
