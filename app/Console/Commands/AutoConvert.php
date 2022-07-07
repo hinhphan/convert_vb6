@@ -127,9 +127,15 @@ class AutoConvert extends Command
         
         // Free replace
         $files = collect(File::allFiles($dirVBNETProject, true));
-
+        $arrFromToToolBarClick = [];
+        
         foreach ($files as $file) {
-            if (preg_match('/.*\.Designer\.vb/', $file->getFilename())) {
+            $matchesMainFilename = null;
+            $mainFilename = '';
+
+            if (preg_match('/(.*)\.Designer\.vb/', $file->getFilename(), $matchesMainFilename)) {
+                $mainFilename = $matchesMainFilename[1];
+
                 // For design
                 File::replaceInFile('[Global]', 'Global', $file->getPathname());
                 File::replaceInFile('[Partial]', 'Partial', $file->getPathname());
@@ -144,9 +150,12 @@ class AutoConvert extends Command
                 File::replaceInFile('_lbl', 'lbl', $file->getPathname());
 
                 $fileContent = File::get($file->getPathname());
+
                 for ($idx = 0; $idx < 10; $idx++) { 
                     $matches = null;
                     if (preg_match('/_Toolbar1_Button'. $idx .'\.Name = "(.*)"/', $fileContent, $matches)) {
+                        $arrFromToToolBarClick[$mainFilename]['_Toolbar1_Button'. $idx] = 'tb'.$matches[1];
+
                         File::replaceInFile('_Toolbar1_Button'. $idx, 'tb'.$matches[1], $file->getPathname());
                     }
                 }
@@ -188,19 +197,26 @@ class AutoConvert extends Command
 
                 $this->removeLineByKeySearch('CrDraw1', $file->getPathname(), true);
 
+                // Truong hop cu the (% cao la dung)
                 File::replaceInFile('Friend WithEvents lblNMGB As System.Windows.Forms.Label', 'Friend WithEvents lblNMGB As CoreLib.LabelFaculty', $file->getPathname());
                 File::replaceInFile('Me.lblNMGB = New System.Windows.Forms.Label', 'Me.lblNMGB = New CoreLib.LabelFaculty', $file->getPathname());
 
                 File::replaceInFile('Friend WithEvents cboCDGK As CoreLib.ComboBoxL', 'Friend WithEvents cboCDGK As CoreLib.UltraComboE', $file->getPathname());
-                File::replaceInFile('Me.cboCDGK = New CoreLib.ComboBoxL', 'Me.cboCDGK = New CoreLib.UltraComboE', $file->getPathname()); // Check lai thang nay dang chay khong dung
+                File::replaceInFile('Me.cboCDGK = New CoreLib.ComboBoxL', 'Me.cboCDGK = New CoreLib.UltraComboE', $file->getPathname());
+
+                File::replaceInFile('Friend WithEvents xLabel2 As System.Windows.Forms.Label', 'Friend WithEvents xLabel2 As CoreLib.LabelS', $file->getPathname());
+                File::replaceInFile('Me.xLabel2 = New System.Windows.Forms.Label', 'Me.xLabel2 = New CoreLib.LabelS', $file->getPathname());
+
+                File::replaceInFile('Friend WithEvents xLabel1 As System.Windows.Forms.Label', 'Friend WithEvents xLabel1 As CoreLib.LabelS', $file->getPathname());
+                File::replaceInFile('Me.xLabel1 = New System.Windows.Forms.Label', 'Me.xLabel1 = New CoreLib.LabelS', $file->getPathname());
 
                 File::replaceInFile('ﾌｧｲﾙ', 'ファイル', $file->getPathname());
                 File::replaceInFile('ﾍﾙﾌﾟ', 'ヘルプ', $file->getPathname());
 
-                
-
             }
-            elseif (preg_match('/^'.$programId.'.*\.vb/', $file->getFilename())) {
+            elseif (preg_match('/^('.$programId.'.*)\.vb/', $file->getFilename(), $matchesMainFilename)) {
+                $mainFilename = $matchesMainFilename[1];
+
                 // For logic file
                 $arrFileContent = file($file->getPathname());
 
@@ -268,7 +284,7 @@ class AutoConvert extends Command
                 $this->removeLineByKeySearch('COMMIT TRAN', $file->getPathname(), true, 'dbCon2.Commit()' . $this->createEnter());
                 $this->removeLineByKeySearch('ROLLBACK TRAN', $file->getPathname(), true, 'dbCon2.Rollback()' . $this->createEnter());
 
-                $this->removeLineByKeySearch('Dim Index As Short =', $file->getPathname(), true, 'Dim Index As Short = FormUtil.getControlPosition(eventSender)' . $this->createEnter());
+                $this->removeLineByKeySearch('Dim Index As Short =', $file->getPathname(), true, $this->createTab(2) . 'Dim Index As Short = FormUtil.getControlPosition(eventSender)' . $this->createEnter());
 
                 // File::replaceInFile('CellCheck_Numeric(PGrid, ', 'CellCheck_Numeric(', $file->getPathname()); //Sai khi co cac man nhieu grid tren 1 man @@
 
@@ -335,6 +351,13 @@ class AutoConvert extends Command
                     }
                 }
 
+                $this->replaceFunctionToText('mnuHELPItem_Click', $this->createTab() . 'Public Sub mnuHELPItem_Click(ByVal eventSender As System.Object, ByVal EventArgs As System.EventArgs) Handles mnuHELPItem_0.Click' . $this->createEnter() . $this->createTab(2) . 'Dim Index As Short = FormUtil.getControlPosition(eventSender)' . $this->createEnter(2) . $this->createTab(2) . 'Select Case Index' . $this->createEnter() . $this->createTab(3) . 'Case 0' . $this->createEnter() .$this->createTab(4) . 'Using helpForm As New Frm_HelpScreen()' . $this->createEnter() . $this->createTab(5) . 'With helpForm' . $this->createEnter() . $this->createTab(6) . '.OptionMode = True' . $this->createEnter() . $this->createTab(6) . '.HelpFileName = My.Application.Info.AssemblyName' . $this->createEnter() . $this->createTab(6) . '.ShowDialog()' .$this->createEnter() .$this->createTab(5) . 'End With' . $this->createEnter() . $this->createTab(4) . 'End Using' . $this->createEnter() . $this->createTab(2) . 'End Select' . $this->createEnter(2) . $this->createTab() . 'End Sub' . $this->createEnter(), $file->getPathname());
+
+                if (isset($arrFromToToolBarClick[$mainFilename]) && !empty($arrFromToToolBarClick[$mainFilename])) {
+                    foreach ($arrFromToToolBarClick[$mainFilename] as $from => $to) {
+                        File::replaceInFile($from, $to, $file->getPathname());
+                    }
+                }
             }
         }
 
@@ -444,6 +467,31 @@ class AutoConvert extends Command
     }
 
     protected function replaceFunctionToText($nameFunc, $textReplace, $path) {
+        $arrFileContent = file($path);
+        $startFunc = false;
+        $fromText = '';
 
+        foreach ($arrFileContent as $key => $content) {
+            if (preg_match('/^\s*\'.*/', $content)) {
+                continue;
+            }
+            
+            if (preg_match('/'.preg_quote('Sub ' . $nameFunc, '/').'/', $content)) {
+                $startFunc = true;
+            }
+
+            if ($startFunc) {
+                $fromText = $fromText . $content;
+
+                if (preg_match('/End Sub/', $content)) {
+                    $startFunc = false;
+                    break;
+                }
+            }
+        }
+
+        if ($fromText !== '') {
+            $this->replaceInFileWithRegex($fromText, $textReplace, $path);
+        }
     }
 }
