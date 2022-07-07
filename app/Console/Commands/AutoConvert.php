@@ -399,6 +399,13 @@ class AutoConvert extends Command
                 File::replaceInFile('Format(pYMD, "yyyy年度")', 'Format(Convert.ToDateTime(pYMD), "yyyy年度")', $file->getPathname());
                 File::replaceInFile('中央揃え', 'center', $file->getPathname());
 
+                $this->removeLineByKeySearch('Private ExcelApp As New Microsoft.Office.Interop.Excel.Application', $file->getPathname(), true);
+
+                File::replaceInFile('.PaperSize = CoReportsCore.corPaperSize.corPaperA4', '.PaperSize = corPaperSize.corPaperA4', $file->getPathname());
+                File::replaceInFile('.ObjectType = CoReports.corObjectType.corList', '.ObjectType = corObjectType.corList', $file->getPathname());
+
+                
+
             }
         }
 
