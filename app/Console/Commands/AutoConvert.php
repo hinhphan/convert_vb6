@@ -358,6 +358,17 @@ class AutoConvert extends Command
                         File::replaceInFile($from, $to, $file->getPathname());
                     }
                 }
+
+                File::replaceInFile('.get_ColStyle(pCOL)', '.DisplayLayout.Bands(0).Columns(pCOL).Style', $file->getPathname());
+
+                File::replaceInFile('_CellGotFocus(ByVal eventSender As System.Object, ByVal eventArgs As AxPGRIDLib._DPGridEvents_CellGotFocusEvent)', '_CellGotFocus(ByVal eventSender As System.Object, ByVal eventArgs As EventArgs)', $file->getPathname());
+                File::replaceInFile('.CellGotFocus', '.AfterCellActivate', $file->getPathname());
+
+                File::replaceInFile('_CellLostFocus(ByVal eventSender As System.Object, ByVal eventArgs As AxPGRIDLib._DPGridEvents_CellLostFocusEvent)', '_CellLostFocus(ByVal eventSender As System.Object, ByVal e As Infragistics.Win.UltraWinGrid.CancelableCellEventArgs)', $file->getPathname());
+                File::replaceInFile('.CellLostFocus', '.BeforeCellActivate', $file->getPathname());
+
+
+
             }
         }
 
