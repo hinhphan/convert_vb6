@@ -134,8 +134,8 @@ class AutoConvert extends Command
             $mainFilename = '';
 
             if (preg_match('/(.*)\.Designer\.vb/', $file->getFilename(), $matchesMainFilename)) {
-                $mainFilename = $matchesMainFilename[1];
-
+                $mainFilename = trim($matchesMainFilename[1], '_frm');
+                
                 // For design
                 File::replaceInFile('[Global]', 'Global', $file->getPathname());
                 File::replaceInFile('[Partial]', 'Partial', $file->getPathname());
@@ -225,9 +225,11 @@ class AutoConvert extends Command
                 File::replaceInFile('Ì§²Ù', 'ƒtƒ@ƒCƒ‹', $file->getPathname());
                 File::replaceInFile('ÍÙÌß', 'ƒwƒ‹ƒv', $file->getPathname());
 
+                $this->changeSizeToolBarButton($file->getPathname());
+
             }
             elseif (preg_match('/^('.$programId.'.*)\.vb/', $file->getFilename(), $matchesMainFilename)) {
-                $mainFilename = $matchesMainFilename[1];
+                $mainFilename = trim($matchesMainFilename[1], '_frm');
 
                 // For logic file
                 $this->replaceInFileWithRegex('System.Windows.Forms.Form', 'Frm_Core', $file->getPathname());
@@ -264,9 +266,6 @@ class AutoConvert extends Command
                         break;
                     }
                 }
-
-                
-
 
                 // Do khong cÃ³ pháº§n Ä‘áº§u cá»§a Parameters nÃªn nÃ³ bá»? áº£nh hÆ°á»Ÿng bá»Ÿi cÃ¡c Cmd khÃ¡c khÃ´ng pháº£i báº£n thÃ¢n nÃ³ @@ => cáº§n fix
                 $fileContent = File::get($file->getPathname());
@@ -329,6 +328,10 @@ class AutoConvert extends Command
                 $this->replaceInFileWithRegex('pBytes = LenB(StrConv(pPGrid.get_CellText(Row, Col), vbFromUnicode))', 'Dim sutil As StringUtil = New StringUtil(StringUtil.ENC_SHIFTJIS)' . $this->createEnter() . $this->createTab(2) . 'pBytes = sutil.getByteCount(pPGrid.get_CellText(Row, Col))' . $this->createEnter(), $file->getPathname());
 
                 $this->appendTextToFunction('frm'.$mainFilename.'_Load', $this->createTab(2) .'ImageListUtil.setToolStripImage(Toolbar1)', $file->getPathname(), 'mMBOXTitle = Me.Text');
+
+                if (preg_match('/mPRNDevice/', file_get_contents($file->getPathname()))) {
+                    $this->appendTextToFunction('frm'.$mainFilename.'_Load', $this->createTab(2) .'mCrDraw = New CrDraw()', $file->getPathname(), 'mMBOXTitle = Me.Text');
+                }
 
                 File::replaceInFile('ByVal eventArgs As System.Windows.Forms.FormClosedEventArgs', 'ByVal eventArgs As System.Windows.Forms.FormClosingEventArgs', $file->getPathname());
                 File::replaceInFile('Handles Me.FormClosed', 'Handles Me.FormClosing', $file->getPathname());
@@ -393,6 +396,9 @@ class AutoConvert extends Command
                 $this->removeLineByKeySearch('lblPaperSize.Text = "‚`‚SFc"', $file->getPathname(), true);
                 $this->removeLineByKeySearch('Call ComboPrnSet(Me, mPRNDevice)', $file->getPathname(), true);
 
+                File::replaceInFile('Format(pYMD, "yyyy”N“x")', 'Format(Convert.ToDateTime(pYMD), "yyyy”N“x")', $file->getPathname());
+
+
             }
         }
 
@@ -423,6 +429,21 @@ class AutoConvert extends Command
             } else {
                 // without regex
 
+            }
+        }
+    }
+
+    protected function changeSizeToolBarButton($path) {
+        $arrFileContent = file($path);
+        $matchTbName = null;
+
+        foreach ($arrFileContent as $fileContent) {
+            if (preg_match('/^\s*\'.*/', $fileContent)) {
+                continue;
+            }
+
+            if (preg_match('/Me\.(tb.*)\.Size \= New System\.Drawing\.Size\(\d\d\, \d\d\)/', $fileContent, $matchTbName)) {
+                $this->replaceInFileWithRegex($fileContent, $this->createTab(2) . 'Me.'.$matchTbName[1].'.Size = New System.Drawing.Size(56, 47)' . $this->createEnter(), $path);
             }
         }
     }
