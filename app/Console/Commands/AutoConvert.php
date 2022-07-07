@@ -194,6 +194,10 @@ class AutoConvert extends Command
                 File::replaceInFile('Friend WithEvents cboCDGK As CoreLib.ComboBoxL', 'Friend WithEvents cboCDGK As CoreLib.UltraComboE', $file->getPathname());
                 File::replaceInFile('Me.cboCDGK = New CoreLib.ComboBoxL', 'Me.cboCDGK = New CoreLib.UltraComboE', $file->getPathname()); // Check lai thang nay dang chay khong dung
 
+                File::replaceInFile('ﾌｧｲﾙ', 'ファイル', $file->getPathname());
+                File::replaceInFile('ﾍﾙﾌﾟ', 'ヘルプ', $file->getPathname());
+
+                
 
             }
             elseif (preg_match('/^'.$programId.'.*\.vb/', $file->getFilename())) {
