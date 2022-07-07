@@ -210,6 +210,18 @@ class AutoConvert extends Command
                 File::replaceInFile('Friend WithEvents xLabel1 As System.Windows.Forms.Label', 'Friend WithEvents xLabel1 As CoreLib.LabelS', $file->getPathname());
                 File::replaceInFile('Me.xLabel1 = New System.Windows.Forms.Label', 'Me.xLabel1 = New CoreLib.LabelS', $file->getPathname());
 
+                File::replaceInFile('Friend WithEvents cboSTCDGK As CoreLib.ComboBoxL', 'Friend WithEvents cboSTCDGK As CoreLib.UltraComboE', $file->getPathname());
+                File::replaceInFile('Me.cboSTCDGK = New CoreLib.ComboBoxL', 'Me.cboSTCDGK = New CoreLib.UltraComboE', $file->getPathname());
+
+                File::replaceInFile('Friend WithEvents cboEDCDGK As CoreLib.ComboBoxL', 'Friend WithEvents cboEDCDGK As CoreLib.UltraComboE', $file->getPathname());
+                File::replaceInFile('Me.cboEDCDGK = New CoreLib.ComboBoxL', 'Me.cboEDCDGK = New CoreLib.UltraComboE', $file->getPathname());
+
+                File::replaceInFile('Friend WithEvents cboSTKBSK As CoreLib.ComboBoxL', 'Friend WithEvents cboSTKBSK As CoreLib.UltraComboE', $file->getPathname());
+                File::replaceInFile('Me.cboSTKBSK = New CoreLib.ComboBoxL', 'Me.cboSTKBSK = New CoreLib.UltraComboE', $file->getPathname());
+
+                File::replaceInFile('Friend WithEvents cboEDKBSK As CoreLib.ComboBoxL', 'Friend WithEvents cboEDKBSK As CoreLib.UltraComboE', $file->getPathname());
+                File::replaceInFile('Me.cboEDKBSK = New CoreLib.ComboBoxL', 'Me.cboEDKBSK = New CoreLib.UltraComboE', $file->getPathname());
+
                 File::replaceInFile('Ì§²Ù', 'ƒtƒ@ƒCƒ‹', $file->getPathname());
                 File::replaceInFile('ÍÙÌß', 'ƒwƒ‹ƒv', $file->getPathname());
 
@@ -218,6 +230,12 @@ class AutoConvert extends Command
                 $mainFilename = $matchesMainFilename[1];
 
                 // For logic file
+                $this->replaceInFileWithRegex('System.Windows.Forms.Form', 'Frm_Core', $file->getPathname());
+
+                $this->removeLineByKeySearch('UPGRADE_ISSUE', $file->getPathname(), true);
+                $this->removeLineByKeySearch('UPGRADE_WARNING', $file->getPathname(), true);
+                $this->removeLineByKeySearch('UPGRADE_NOTE', $file->getPathname(), true);
+
                 $arrFileContent = file($file->getPathname());
 
                 foreach ($arrFileContent as $key => $content) {
@@ -247,11 +265,7 @@ class AutoConvert extends Command
                     }
                 }
 
-                $this->replaceInFileWithRegex('System.Windows.Forms.Form', 'Frm_Core', $file->getPathname());
-
-                $this->removeLineByKeySearch('UPGRADE_ISSUE', $file->getPathname(), true);
-                $this->removeLineByKeySearch('UPGRADE_WARNING', $file->getPathname(), true);
-                $this->removeLineByKeySearch('UPGRADE_NOTE', $file->getPathname(), true);
+                
 
 
                 // Do khong cÃ³ pháº§n Ä‘áº§u cá»§a Parameters nÃªn nÃ³ bá»? áº£nh hÆ°á»Ÿng bá»Ÿi cÃ¡c Cmd khÃ¡c khÃ´ng pháº£i báº£n thÃ¢n nÃ³ @@ => cáº§n fix
@@ -314,13 +328,13 @@ class AutoConvert extends Command
 
                 $this->replaceInFileWithRegex('pBytes = LenB(StrConv(pPGrid.get_CellText(Row, Col), vbFromUnicode))', 'Dim sutil As StringUtil = New StringUtil(StringUtil.ENC_SHIFTJIS)' . $this->createEnter() . $this->createTab(2) . 'pBytes = sutil.getByteCount(pPGrid.get_CellText(Row, Col))' . $this->createEnter(), $file->getPathname());
 
-                $this->appendTextToFunction('frm'.$programId.'_Load', $this->createTab(2) .'ImageListUtil.setToolStripImage(Toolbar1)', $file->getPathname(), 'mMBOXTitle = Me.Text');
+                $this->appendTextToFunction('frm'.$mainFilename.'_Load', $this->createTab(2) .'ImageListUtil.setToolStripImage(Toolbar1)', $file->getPathname(), 'mMBOXTitle = Me.Text');
 
                 File::replaceInFile('ByVal eventArgs As System.Windows.Forms.FormClosedEventArgs', 'ByVal eventArgs As System.Windows.Forms.FormClosingEventArgs', $file->getPathname());
                 File::replaceInFile('Handles Me.FormClosed', 'Handles Me.FormClosing', $file->getPathname());
 
                 if (!preg_match('/'.preg_quote('If mnuFILEItem_9.Enabled = False Then', '/').'/', file_get_contents($file->getPathname()))) {
-                    $this->appendTextToFunction('frm'.$programId.'_FormClosed', $this->createTab(2) . 'If mnuFILEItem_9.Enabled = False Then' . $this->createEnter() . $this->createTab(3) . 'mMsgText = "“o˜^ˆ—’†‚Å‚·BI—¹‚Å‚«‚Ü‚¹‚ñB"' . $this->createEnter() . $this->createTab(3) . 'MsgBox(mMsgText, MsgBoxStyle.OkOnly + MsgBoxStyle.Exclamation,mMBOXTitle)' . $this->createEnter() . $this->createTab(3) . 'eventArgs.Cancel = True' . $this->createEnter() . $this->createTab(3) . 'Exit Sub' . $this->createEnter() . $this->createTab(2) . 'End if' . $this->createEnter(), $file->getPathname(), 'Sub frm'.$programId.'_FormClosed');
+                    $this->appendTextToFunction('frm'.$mainFilename.'_FormClosed', $this->createTab(2) . 'If mnuFILEItem_9.Enabled = False Then' . $this->createEnter() . $this->createTab(3) . 'mMsgText = "“o˜^ˆ—’†‚Å‚·BI—¹‚Å‚«‚Ü‚¹‚ñB"' . $this->createEnter() . $this->createTab(3) . 'MsgBox(mMsgText, MsgBoxStyle.OkOnly + MsgBoxStyle.Exclamation,mMBOXTitle)' . $this->createEnter() . $this->createTab(3) . 'eventArgs.Cancel = True' . $this->createEnter() . $this->createTab(3) . 'Exit Sub' . $this->createEnter() . $this->createTab(2) . 'End if' . $this->createEnter(), $file->getPathname(), 'Sub frm'.$mainFilename.'_FormClosed');
                 }
 
                 // Add dbCmd, dbRec -> Bas_
@@ -367,7 +381,17 @@ class AutoConvert extends Command
                 File::replaceInFile('_CellLostFocus(ByVal eventSender As System.Object, ByVal eventArgs As AxPGRIDLib._DPGridEvents_CellLostFocusEvent)', '_CellLostFocus(ByVal eventSender As System.Object, ByVal e As Infragistics.Win.UltraWinGrid.CancelableCellEventArgs)', $file->getPathname());
                 File::replaceInFile('.CellLostFocus', '.BeforeCellActivate', $file->getPathname());
 
+                File::replaceInFile('dbCon2.Execute(SqlText,  , ADODB.CommandTypeEnum.adCmdText + ADODB.ExecuteOptionEnum.adExecuteNoRecords)', 'dbCon2.Execute(SqlText, pRecordsAffected, ADODB.CommandTypeEnum.adCmdText + ADODB.ExecuteOptionEnum.adExecuteNoRecords)', $file->getPathname());
 
+                $this->replaceFunctionToText('cboPRN_SelectedIndexChanged', '', $file->getPathname());
+                $this->replaceFunctionToText('cboPRN_KeyDown', '', $file->getPathname());
+                $this->replaceFunctionToText('cboPRN_KeyPress', '', $file->getPathname());
+                $this->removeLineByKeySearch('Dim Printer As New Printer', $file->getPathname(), true);
+                $this->removeLineByKeySearch('mPRNDevice = Printer.DeviceName', $file->getPathname(), true);
+                $this->removeLineByKeySearch('mPRNDriver = Printer.DriverName', $file->getPathname(), true);
+                $this->removeLineByKeySearch('mPRNPort = Printer.Port', $file->getPathname(), true);
+                $this->removeLineByKeySearch('lblPaperSize.Text = "‚`‚SFc"', $file->getPathname(), true);
+                $this->removeLineByKeySearch('Call ComboPrnSet(Me, mPRNDevice)', $file->getPathname(), true);
 
             }
         }
