@@ -134,8 +134,8 @@ class AutoConvert extends Command
             $mainFilename = '';
 
             if (preg_match('/(.*)\.Designer\.vb/', $file->getFilename(), $matchesMainFilename)) {
-                $mainFilename = trim($matchesMainFilename[1], '_frm');
-                
+                $mainFilename = str_replace('_frm', '', $matchesMainFilename[1]);
+
                 // For design
                 File::replaceInFile('[Global]', 'Global', $file->getPathname());
                 File::replaceInFile('[Partial]', 'Partial', $file->getPathname());
@@ -229,7 +229,7 @@ class AutoConvert extends Command
 
             }
             elseif (preg_match('/^('.$programId.'.*)\.vb/', $file->getFilename(), $matchesMainFilename)) {
-                $mainFilename = trim($matchesMainFilename[1], '_frm');
+                $mainFilename = str_replace('_frm', '', $matchesMainFilename[1]);
 
                 // For logic file
                 $this->replaceInFileWithRegex('System.Windows.Forms.Form', 'Frm_Core', $file->getPathname());
@@ -271,7 +271,7 @@ class AutoConvert extends Command
                 $fileContent = File::get($file->getPathname());
                 for ($idx = 0; $idx < 100; $idx++) {
                     if (preg_match('/Parameters\('.$idx.'\)\.Value = System\.DBNull\.Value/', $fileContent)) {
-                        File::replaceInFile('Parameters('.$idx.')', 'Parameters.Add("@p'.$idx.'", SqlDbType.Text)', $file->getPathname());
+                        File::replaceInFile('Parameters('.$idx.')', 'Parameters.Add("@p'.$idx.'", SqlDbType.NText)', $file->getPathname());
                     } else {
                         File::replaceInFile('Parameters('.$idx.')', 'Parameters.Add("@p'.$idx.'", SqlDbType.Int)', $file->getPathname());
                     }
@@ -279,7 +279,7 @@ class AutoConvert extends Command
 
                 File::replaceInFile('GoSub', 'GoTo', $file->getPathname());
 
-                $arrTBName = ['PRINT', 'PREVIEW', 'CANCEL', 'EXIT', 'EXEC', 'ROWDELETE', 'COPY', 'ROWINSERT', 'EXCEL'];
+                $arrTBName = ['PRINT', 'PREVIEW', 'CANCEL', 'EXIT', 'EXEC', 'ROWDELETE', 'COPY', 'ROWINSERT', 'EXCEL', 'DELETE'];
                 foreach ($arrTBName as $tbName) {
                     File::replaceInFile('Toolbar1.Items.Item("'.$tbName.'").Enabled', 'tb'.$tbName.'.Enabled', $file->getPathname());
                     File::replaceInFile('Case "'.$tbName.'"', 'Case "tb'.$tbName.'"', $file->getPathname());
@@ -397,7 +397,7 @@ class AutoConvert extends Command
                 $this->removeLineByKeySearch('Call ComboPrnSet(Me, mPRNDevice)', $file->getPathname(), true);
 
                 File::replaceInFile('Format(pYMD, "yyyy年度")', 'Format(Convert.ToDateTime(pYMD), "yyyy年度")', $file->getPathname());
-
+                File::replaceInFile('中央揃え', 'center', $file->getPathname());
 
             }
         }
