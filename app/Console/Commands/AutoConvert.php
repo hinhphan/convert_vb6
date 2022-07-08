@@ -242,7 +242,7 @@ class AutoConvert extends Command
                 // For logic file
                 $this->replaceInFileWithRegex('System.Windows.Forms.Form', 'Frm_Core', $file->getPathname());
 
-                $this->removeLineByKeySearch('UPGRADE_', $file->getPathname(), true);
+                $this->removeLineByKeySearch('UPGRADE\_', $file->getPathname(), true);
 
                 $arrFileContent = file($file->getPathname());
 
@@ -303,7 +303,7 @@ class AutoConvert extends Command
                 $this->removeLineByKeySearch('COMMIT TRAN', $file->getPathname(), true, 'dbCon2.Commit()' . $this->createEnter());
                 $this->removeLineByKeySearch('ROLLBACK TRAN', $file->getPathname(), true, 'dbCon2.Rollback()' . $this->createEnter());
 
-                $this->removeLineByKeySearch('Dim Index As Short =', $file->getPathname(), true, $this->createTab(2) . 'Dim Index As Short = FormUtil.getControlPosition(eventSender)' . $this->createEnter());
+                $this->removeLineByKeySearch('Dim Index As Short \=', $file->getPathname(), true, $this->createTab(2) . 'Dim Index As Short = FormUtil.getControlPosition(eventSender)' . $this->createEnter());
 
                 // File::replaceInFile('CellCheck_Numeric(PGrid, ', 'CellCheck_Numeric(', $file->getPathname()); //Sai khi co cac man nhieu grid tren 1 man @@
 
@@ -406,7 +406,7 @@ class AutoConvert extends Command
                 File::replaceInFile('’†‰›‘µ‚¦', 'center', $file->getPathname());
                 File::replaceInFile('¶‘µ‚¦', 'left', $file->getPathname());
 
-                $this->removeLineByKeySearch('Private ExcelApp As New Microsoft.Office.Interop.Excel.Application', $file->getPathname(), true);
+                $this->removeLineByKeySearch('Private ExcelApp As New Microsoft\.Office\.Interop\.Excel\.Application', $file->getPathname(), true);
 
                 File::replaceInFile('.PaperSize = CoReportsCore.corPaperSize.corPaperA4', '.PaperSize = corPaperSize.corPaperA4', $file->getPathname());
                 File::replaceInFile('.ObjectType = CoReports.corObjectType.corList', '.ObjectType = corObjectType.corList', $file->getPathname());
