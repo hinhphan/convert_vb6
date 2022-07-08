@@ -108,7 +108,7 @@ class AutoConvert extends Command
         }
         
         foreach ($files as $file) {
-            if (!preg_match('/'.$programId.'.*/', $file->getFilename()) || preg_match('/'.$programId.'_bas\.vb/', $file->getFilename()) || preg_match('/'.$programId.'\.log/', $file->getFilename())) {
+            if (!preg_match('/'.$programId.'.*/', $file->getFilename()) || preg_match('/'.$programId.'_bas\.vb/', $file->getFilename()) || preg_match('/'.$programId.'\.log/', $file->getFilename()) || preg_match('/'.$programId.'\.ico/', $file->getFilename())) {
                 File::delete($file->getPathname());
             }
         }
@@ -242,9 +242,7 @@ class AutoConvert extends Command
                 // For logic file
                 $this->replaceInFileWithRegex('System.Windows.Forms.Form', 'Frm_Core', $file->getPathname());
 
-                $this->removeLineByKeySearch('UPGRADE_ISSUE', $file->getPathname(), true);
-                $this->removeLineByKeySearch('UPGRADE_WARNING', $file->getPathname(), true);
-                $this->removeLineByKeySearch('UPGRADE_NOTE', $file->getPathname(), true);
+                $this->removeLineByKeySearch('UPGRADE_', $file->getPathname(), true);
 
                 $arrFileContent = file($file->getPathname());
 
@@ -398,14 +396,15 @@ class AutoConvert extends Command
                 $this->replaceFunctionToText('cboPRN_KeyDown', '', $file->getPathname());
                 $this->replaceFunctionToText('cboPRN_KeyPress', '', $file->getPathname());
                 $this->removeLineByKeySearch('Dim Printer As New Printer', $file->getPathname(), true);
-                $this->removeLineByKeySearch('mPRNDevice = Printer.DeviceName', $file->getPathname(), true);
-                $this->removeLineByKeySearch('mPRNDriver = Printer.DriverName', $file->getPathname(), true);
-                $this->removeLineByKeySearch('mPRNPort = Printer.Port', $file->getPathname(), true);
-                $this->removeLineByKeySearch('lblPaperSize.Text = "‚`‚SFc"', $file->getPathname(), true);
-                $this->removeLineByKeySearch('Call ComboPrnSet(Me, mPRNDevice)', $file->getPathname(), true);
+                $this->removeLineByKeySearch('mPRNDevice \= Printer\.DeviceName', $file->getPathname(), true);
+                $this->removeLineByKeySearch('mPRNDriver \= Printer\.DriverName', $file->getPathname(), true);
+                $this->removeLineByKeySearch('mPRNPort \= Printer\.Port', $file->getPathname(), true);
+                $this->removeLineByKeySearch('lblPaperSize\.Text \= \"‚`‚S\Fc\"', $file->getPathname(), true);
+                $this->removeLineByKeySearch('Call ComboPrnSet\(Me\, mPRNDevice\)', $file->getPathname(), true);
 
                 File::replaceInFile('Format(pYMD, "yyyy”N“x")', 'Format(Convert.ToDateTime(pYMD), "yyyy”N“x")', $file->getPathname());
                 File::replaceInFile('’†‰›‘µ‚¦', 'center', $file->getPathname());
+                File::replaceInFile('¶‘µ‚¦', 'left', $file->getPathname());
 
                 $this->removeLineByKeySearch('Private ExcelApp As New Microsoft.Office.Interop.Excel.Application', $file->getPathname(), true);
 
