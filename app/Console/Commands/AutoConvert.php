@@ -429,7 +429,7 @@ class AutoConvert extends Command
 
     protected function removeLineByKeySearch($keySearch, $path, $isRegex, $toString = '') {
         $arrFileContent = file($path);
-        $exceptText = ['UPGRADE_ISSUE', 'UPGRADE_WARNING', 'UPGRADE_NOTE'];
+        $exceptText = ['UPGRADE\_'];
 
         foreach ($arrFileContent as $content) {
             if (preg_match('/^\s*\'.*/', $content) && !in_array($keySearch, $exceptText)) {
