@@ -303,7 +303,7 @@ class AutoConvert extends Command
                 $this->removeLineByKeySearch('COMMIT TRAN', $file->getPathname(), true, 'dbCon2.Commit()' . $this->createEnter());
                 $this->removeLineByKeySearch('ROLLBACK TRAN', $file->getPathname(), true, 'dbCon2.Rollback()' . $this->createEnter());
 
-                $this->removeLineByKeySearch('Dim Index As Short =', $file->getPathname(), true, $this->createTab(2) . 'Dim Index As Short = FormUtil.getControlPosition(eventSender)' . $this->createEnter());
+                $this->removeLineByKeySearch(preg_quote('Dim Index As Short =', '/'), $file->getPathname(), true, $this->createTab(2) . 'Dim Index As Short = FormUtil.getControlPosition(eventSender)' . $this->createEnter());
 
                 // File::replaceInFile('CellCheck_Numeric(PGrid, ', 'CellCheck_Numeric(', $file->getPathname()); //Sai khi co cac man nhieu grid tren 1 man @@
 
@@ -397,11 +397,11 @@ class AutoConvert extends Command
                 $this->replaceFunctionToText('cboPRN_KeyDown', '', $file->getPathname());
                 $this->replaceFunctionToText('cboPRN_KeyPress', '', $file->getPathname());
                 $this->removeLineByKeySearch('Dim Printer As New Printer', $file->getPathname(), true);
-                $this->removeLineByKeySearch('mPRNDevice \= Printer\.DeviceName', $file->getPathname(), true);
-                $this->removeLineByKeySearch('mPRNDriver \= Printer\.DriverName', $file->getPathname(), true);
-                $this->removeLineByKeySearch('mPRNPort \= Printer\.Port', $file->getPathname(), true);
-                $this->removeLineByKeySearch('lblPaperSize\.Text \= \"‚`‚S\Fc\"', $file->getPathname(), true);
-                $this->removeLineByKeySearch('Call ComboPrnSet\(Me\, mPRNDevice\)', $file->getPathname(), true);
+                $this->removeLineByKeySearch(preg_quote('mPRNDevice = Printer.DeviceName', '/'), $file->getPathname(), true);
+                $this->removeLineByKeySearch(preg_quote('mPRNDriver = Printer.DriverName', '/'), $file->getPathname(), true);
+                $this->removeLineByKeySearch(preg_quote('mPRNPort = Printer.Port', '/'), $file->getPathname(), true);
+                $this->removeLineByKeySearch(preg_quote('lblPaperSize.Text = "‚`‚SFc"', '/'), $file->getPathname(), true);
+                $this->removeLineByKeySearch(preg_quote('Call ComboPrnSet(Me, mPRNDevice)', '/'), $file->getPathname(), true);
 
                 File::replaceInFile('Format(pYMD, "yyyy”N“x")', 'Format(Convert.ToDateTime(pYMD), "yyyy”N“x")', $file->getPathname());
                 File::replaceInFile('’†‰›‘µ‚¦', 'center', $file->getPathname());
