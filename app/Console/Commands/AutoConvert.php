@@ -124,6 +124,13 @@ class AutoConvert extends Command
         // $formName = $this->ask('What is your form name?');
         // File::replaceInFile(['機能名　標準モジュール'], $formName, $dirFileBas);
         // File::replaceInFile(['[プログラム名]'], $formName, $dirFileBas);
+
+        // Copy temp vbproj -> vbproj
+        File::delete($newVBProjPath);
+        File::copy(public_path('VBPROJ_TEMPLATE.vbproj'), $newVBProjPath);
+
+        // Edit new file vbproj
+        $this->replaceInFileWithRegex('<PROGRAM_ID>', $programId, $newVBProjPath, -1);
         
         // Free replace
         $files = collect(File::allFiles($dirVBNETProject, true));
@@ -148,6 +155,7 @@ class AutoConvert extends Command
                 File::replaceInFile('_cmd', 'cmd', $file->getPathname());
                 File::replaceInFile('_xLabel', 'xLabel', $file->getPathname());
                 File::replaceInFile('_lbl', 'lbl', $file->getPathname());
+                File::replaceInFile('_PGrid', 'PGrid', $file->getPathname());
 
                 $fileContent = File::get($file->getPathname());
 
@@ -492,9 +500,9 @@ class AutoConvert extends Command
         }
     }
 
-    protected function replaceInFileWithRegex($search, $replace, $path)
+    protected function replaceInFileWithRegex($search, $replace, $path, $limit = 1)
     {
-        file_put_contents($path, preg_replace('/'.preg_quote($search, '/').'/', $replace, file_get_contents($path), 1));
+        file_put_contents($path, preg_replace('/'.preg_quote($search, '/').'/', $replace, file_get_contents($path), $limit));
     }
 
     protected function appendTextToFunction($nameFunc, $textAppend, $path, $afterText = null) {
