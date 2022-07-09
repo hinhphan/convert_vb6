@@ -251,6 +251,13 @@ class AutoConvert extends Command
 
                         if (preg_match('/mPRNDevice/', file_get_contents($file->getPathname()))) {
                             $toText = $toText . 'Imports CoReportsCoreU' . $this->createEnter() . 'Imports CoReportsU' . $this->createEnter(2);
+
+                            // Add reference to vbproj
+                            $this->replaceInFileWithRegex('</Reference>', '</Reference>' . $this->createEnter() .  $this->createTab() . '<Reference Include="Interop.CoReportsCoreU">' . $this->createEnter() . $this->createTab(2) . '<HintPath>..\..\DLL\Interop.CoReportsCoreU.dll</HintPath>' . $this->createEnter() . $this->createTab() . '</Reference>' . $this->createEnter() . $this->createTab() . '<Reference Include="Interop.CoReportsU">' . $this->createEnter() . $this->createTab(2) . '<HintPath>..\..\DLL\Interop.CoReportsU.dll</HintPath>' . $this->createEnter() . $this->createTab() . '</Reference>' .$this->createEnter(), $newVBProjPath);
+                        
+                            // Add link to file crf
+                            $this->replaceInFileWithRegex('</ItemGroup>', '</ItemGroup>' .$this->createEnter() . $this->createTab() . '<ItemGroup>' . $this->createEnter() . $this->createTab(2) . str_replace('<PROGRAM_ID>', $programId, '<None Include="..\..\Report\<PROGRAM_ID>.crf" Link="Report\<PROGRAM_ID>.crf">') . $this->createEnter() . $this->createTab(3) . '<CopyToOutputDirectory>Always</CopyToOutputDirectory>' . $this->createEnter() .$this->createTab(2) . '</None>' .$this->createEnter() . $this->createTab() . '</ItemGroup>' . $this->createEnter(), $newVBProjPath);
+
                         }
 
                         if (preg_match('/\?/', file_get_contents($file->getPathname()))) {
@@ -260,16 +267,6 @@ class AutoConvert extends Command
                         $this->replaceInFileWithRegex($fromText, $toText, $file->getPathname());
 
                         break;
-                    }
-                }
-
-                // Do khong cﾃｳ ph蘯ｧn ﾄ黛ｺｧu c盻ｧa Parameters nﾃｪn nﾃｳ b盻? 蘯｣nh hﾆｰ盻殤g b盻殃 cﾃ｡c Cmd khﾃ｡c khﾃｴng ph蘯｣i b蘯｣n thﾃ｢n nﾃｳ @@ => c蘯ｧn fix
-                $fileContent = File::get($file->getPathname());
-                for ($idx = 0; $idx < 100; $idx++) {
-                    if (preg_match('/Parameters\('.$idx.'\)\.Value = System\.DBNull\.Value/', $fileContent)) {
-                        File::replaceInFile('Parameters('.$idx.')', 'Parameters.Add("@p'.$idx.'", SqlDbType.NText)', $file->getPathname());
-                    } else {
-                        File::replaceInFile('Parameters('.$idx.')', 'Parameters.Add("@p'.$idx.'", SqlDbType.Int)', $file->getPathname());
                     }
                 }
 
@@ -308,7 +305,7 @@ class AutoConvert extends Command
 
                 File::replaceInFile('CrDraw1', 'mCrDraw', $file->getPathname());
 
-                File::replaceInFile('.RecordCount', '.F ields("rCount").Value', $file->getPathname());
+                File::replaceInFile('.RecordCount', '.F ields("rCount").Value \'"ADODB.Recordset.recordCountSQLstrings"', $file->getPathname());
 
                 File::replaceInFile('.set_CellEnabled(', '.set_CellEnable(', $file->getPathname());
 
@@ -349,6 +346,15 @@ class AutoConvert extends Command
                             $this->removeLineByKeySearch(preg_quote('Public dbCmdUPD As CoreLib.ADODB.Command', '/'), $dirFileBas, true, $this->createTab().'Public dbCmdUPD As CoreLib.ADODB.Command' . $this->createEnter() . $this->createTab(). 'Public '.$matchDbCmd.' As CoreLib.ADODB.Command' . $this->createEnter());
                             $this->removeLineByKeySearch(preg_quote('If Not dbCmdUPD Is Nothing Then dbCmdUPD.Dispose()', '/'), $dirFileBas, true, $this->createTab(3).'If Not dbCmdUPD Is Nothing Then dbCmdUPD.Dispose()' . $this->createEnter() . $this->createTab(3). 'If Not '.$matchDbCmd.' Is Nothing Then '.$matchDbCmd.'.Dispose()' . $this->createEnter());
                             $this->removeLineByKeySearch(preg_quote('dbCmdUPD = Nothing', '/'), $dirFileBas, true, $this->createTab(3).'dbCmdUPD = Nothing' . $this->createEnter() . $this->createTab(3). $matchDbCmd . ' = Nothing' . $this->createEnter());
+                        }
+
+                        $fileContent = File::get($file->getPathname());
+                        for ($idx = 0; $idx < 100; $idx++) {
+                            if (preg_match('/'.$matchDbCmd.'\.Parameters\('.$idx.'\)\.Value = System\.DBNull\.Value/', $fileContent)) {
+                                File::replaceInFile($matchDbCmd.'.Parameters('.$idx.')', $matchDbCmd.'.Parameters.Add("@p'.$idx.'", SqlDbType.NText)', $file->getPathname());
+                            } else {
+                                File::replaceInFile($matchDbCmd.'.Parameters('.$idx.')', $matchDbCmd.'.Parameters.Add("@p'.$idx.'", SqlDbType.Int)', $file->getPathname());
+                            }
                         }
                     }
                 }
@@ -416,6 +422,7 @@ class AutoConvert extends Command
                 File::replaceInFile('Format(pYMD, "yyyy年度")', 'Format(Convert.ToDateTime(pYMD), "yyyy年度")', $file->getPathname());
                 File::replaceInFile('中央揃え', 'center', $file->getPathname());
                 File::replaceInFile('左揃え', 'left', $file->getPathname());
+                File::replaceInFile('右揃え', 'right', $file->getPathname());
 
                 $this->removeLineByKeySearch('Private ExcelApp As New Microsoft\.Office\.Interop\.Excel\.Application', $file->getPathname(), true);
 
@@ -430,7 +437,7 @@ class AutoConvert extends Command
 
         $bar->finish();
 
-        $this->newLine();
+        $this->newLine(2);
         $this->info('<fg=green>Auto convert success...</>');
 
         return 0;
