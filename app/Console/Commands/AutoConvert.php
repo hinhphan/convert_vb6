@@ -13,7 +13,7 @@ class AutoConvert extends Command
      *
      * @var string
      */
-    protected $signature = 'auto:convert {dirSource}';
+    protected $signature = 'auto:convert';
 
     /**
      * The console command description.
@@ -22,7 +22,6 @@ class AutoConvert extends Command
      */
     protected $description = 'Convert VB';
 
-    protected $dirDevenv = "";
     protected $dirVBNET = "";
 
     /**
@@ -32,73 +31,50 @@ class AutoConvert extends Command
      */
     public function handle()
     {
-        $this->dirDevenv = env('DIR_DEVENV', "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\devenv.exe");
         $this->dirVBNET = env('DIR_VBNET', "D:\\XAMPP\\Convert_VB\\src\\src_VB.NET");
 
         Log::debug("==============================Start auto convert==============================");
 
-        $dirSource = $this->argument('dirSource');
+        $dirSource = $this->ask("From directory?");
 
-        Log::debug("Convert from dir: " . $dirSource);
+        if (empty($dirSource)) {
+            $this->error('From directory => required');
+            return 0;
+        }
 
-        Log::debug("Search file *.vbproj...");
+        $dirVBNETTemp = $this->ask('To directory? (Default: '.$this->dirVBNET.')');
+
+        if (!empty($dirVBNETTemp)) {
+            $this->dirVBNET = $dirVBNETTemp;
+        }
+
+        $this->info('<fg=blue>Convert from directory: </>' . $dirSource);
+        $this->info('<fg=blue>All file after auto convert will copy to: </>'. $this->dirVBNET);
+
         $files = collect(File::allFiles($dirSource, true));
         $fileVbproj = $files->filter(function($file) {
             return preg_match('/.*vbproj$/', $file->getFilename());
         })->first();
 
         if (empty($fileVbproj)) {
-            Log::debug("Can't find file *.vbproj");
+            $this->error("Can't find file *.vbproj");
             return 0;
         }
 
-        Log::debug("Find file *.vbproj success...");
         $programId = explode('.', $fileVbproj->getFilename())[0];
 
-        Log::debug("Start VBUpgrade...");
-        Log::debug("Using ".$this->dirDevenv." ...");
-        // 2-1
-        $output = null;
-        // dd('"' . $this->dirDevenv . '"' . ' ' . '"' . $fileVbproj->getPathname() . '"' . ' /upgrade', $output);
-        if (false === exec('"' . $this->dirDevenv . '"' . ' ' . '"' . $fileVbproj->getPathname() . '"' . ' /upgrade', $output)) {
-            Log::debug("Can't VBUpgrade...");
-            return 0;
-        }
-
-        Log::debug("VBUpgrade success...");
-        Log::debug("Start update net framework...");
-        Log::debug("Using upgrade-asssistant...");
-
-        if (false === exec('upgrade-assistant upgrade "' . $fileVbproj->getPathname() . '" --non-interactive', $output)) {
-            Log::debug("Can't update net framework...");
-            return 0;
-        }
-
-        Log::debug("Update net framework success...");
-
-        Log::debug("Copy dir from " . $dirSource);
-        Log::debug("To " . $this->dirVBNET . DIRECTORY_SEPARATOR . $programId);
-        
         if (!File::copyDirectory($dirSource, $this->dirVBNET . DIRECTORY_SEPARATOR . $programId)) {
-            Log::debug("Can't copy dir...");
+            $this->error("Can't copy to: " . $this->dirVBNET . DIRECTORY_SEPARATOR . $programId);
             return 0;
         }
-
-        Log::debug("Copy dir success...");
 
         $newVBProjPath = $this->dirVBNET . DIRECTORY_SEPARATOR . $programId . DIRECTORY_SEPARATOR . $programId.".vbproj";
 
         // 2-4. [繝励Ο繧ｰ繝ｩ繝?ID].vbproj.user繧貞炎髯､縺吶ｋ縲?
-        Log::debug("Delete file ".$programId.".vbproj.user");
-        
         if (!File::delete($this->dirVBNET . DIRECTORY_SEPARATOR . $programId . DIRECTORY_SEPARATOR . $programId.".vbproj.user")) {
-            Log::debug("Can't delete file ".$programId.".vbproj.user");
-            Log::debug("Continu.......");
+            // $this->warn("Can't delete file ".$programId.".vbproj.user");
         }
 
-        Log::debug("Delete file success...");
-
-        Log::debug("Start delete other files...");
         $dirVBNETProject = $this->dirVBNET . DIRECTORY_SEPARATOR . $programId;
         $files = collect(File::allFiles($dirVBNETProject, true));
         $dirs = collect(File::directories($dirVBNETProject));
@@ -113,17 +89,14 @@ class AutoConvert extends Command
             }
         }
 
-        Log::debug("Copy file Bas_");
         $dirFileBas = $this->dirVBNET . DIRECTORY_SEPARATOR . $programId . DIRECTORY_SEPARATOR . 'Bas_'.$programId.'.vb';
-        if (!File::copy($this->dirVBNET . DIRECTORY_SEPARATOR . 'Bas_Template.vb', $dirFileBas)) {
-            Log::debug("Copy file Bas_ error");
+        if (!File::copy(public_path('Bas_Template.vb'), $dirFileBas)) {
+            $this->warn("Copy file Bas_ error");
         }
 
-        Log::debug("Edit file Bas_");
-        File::replaceInFile(['[プログラムID]'], $programId, $dirFileBas);
+        $this->replaceInFileWithRegex('<PROGRAM_ID>', $programId, $dirFileBas, -1);
         // $formName = $this->ask('What is your form name?');
-        // File::replaceInFile(['機能名　標準モジュール'], $formName, $dirFileBas);
-        // File::replaceInFile(['[プログラム名]'], $formName, $dirFileBas);
+        // $this->replaceInFileWithRegex('<FORM_NAME>', mb_convert_encoding($formName, 'UTF-8'), $dirFileBas, -1);
 
         // Copy temp vbproj -> vbproj
         File::delete($newVBProjPath);
@@ -133,8 +106,14 @@ class AutoConvert extends Command
         $this->replaceInFileWithRegex('<PROGRAM_ID>', $programId, $newVBProjPath, -1);
         
         // Free replace
+        $this->info('Start auto convert...');
         $files = collect(File::allFiles($dirVBNETProject, true));
         $arrFromToToolBarClick = [];
+        $arrMnuFile = [];
+        $arrMnuEdit = [];
+
+        $bar = $this->output->createProgressBar($files->count());
+        $bar->start();
         
         foreach ($files as $file) {
             $matchesMainFilename = null;
@@ -166,6 +145,17 @@ class AutoConvert extends Command
 
                         File::replaceInFile('_Toolbar1_Button'. $idx, 'tb'.$matches[1], $file->getPathname());
                     }
+                }
+
+                $matches = null;
+                $fileContent = File::get($file->getPathname());
+
+                if (preg_match_all('/Friend WithEvents (mnuFILEItem\_\d*)/', $fileContent, $matches)) {
+                    $arrMnuFile[$mainFilename] = $matches[1];
+                }
+
+                if (preg_match_all('/Friend WithEvents (mnuEDITItem\_\d*)/', $fileContent, $matches)) {
+                    $arrMnuEdit[$mainFilename] = $matches[1];
                 }
 
                 $this->removeLineByKeySearch('Me\.Font', $file->getPathname(), true);
@@ -383,6 +373,26 @@ class AutoConvert extends Command
                     }
                 }
 
+                if (isset($arrMnuFile[$mainFilename]) && !empty($arrMnuFile[$mainFilename])) {
+                    $arrMnuFile[$mainFilename] = array_map(function($item) {
+                        return $item . '.Click';
+                    }, $arrMnuFile[$mainFilename]);
+
+                    $mnuFileString = join(', ', $arrMnuFile[$mainFilename]);
+
+                    File::replaceInFile('Public Sub mnuFILEItem_Click(ByVal eventSender As System.Object, ByVal eventArgs As System.EventArgs) Handles mnuFILEItem.Click', 'Public Sub mnuFILEItem_Click(ByVal eventSender As System.Object, ByVal eventArgs As System.EventArgs) Handles ' . $mnuFileString, $file->getPathname());
+                }
+
+                if (isset($arrMnuEdit[$mainFilename]) && !empty($arrMnuEdit[$mainFilename])) {
+                    $arrMnuEdit[$mainFilename] = array_map(function($item) {
+                        return $item . '.Click';
+                    }, $arrMnuEdit[$mainFilename]);
+
+                    $mnuEditString = join(', ', $arrMnuEdit[$mainFilename]);
+
+                    File::replaceInFile('Public Sub mnuEDITItem_Click(ByVal eventSender As System.Object, ByVal eventArgs As System.EventArgs) Handles mnuEDITItem.Click', 'Public Sub mnuEDITItem_Click(ByVal eventSender As System.Object, ByVal eventArgs As System.EventArgs) Handles ' . $mnuEditString, $file->getPathname());
+                }
+
                 File::replaceInFile('.get_ColStyle(pCOL)', '.DisplayLayout.Bands(0).Columns(pCOL).Style', $file->getPathname());
 
                 File::replaceInFile('_CellGotFocus(ByVal eventSender As System.Object, ByVal eventArgs As AxPGRIDLib._DPGridEvents_CellGotFocusEvent)', '_CellGotFocus(ByVal eventSender As System.Object, ByVal eventArgs As EventArgs)', $file->getPathname());
@@ -413,9 +423,15 @@ class AutoConvert extends Command
                 File::replaceInFile('.ObjectType = CoReports.corObjectType.corList', '.ObjectType = corObjectType.corList', $file->getPathname());
 
                 
-
             }
+
+            $bar->advance();
         }
+
+        $bar->finish();
+
+        $this->newLine();
+        $this->info('<fg=green>Auto convert success...</>');
 
         return 0;
     }
