@@ -107,17 +107,22 @@ class AutoConvert extends Command
         
         // Free replace
         $this->info('Start auto convert...');
+        $this->newLine();
+
         $files = collect(File::allFiles($dirVBNETProject, true));
         $arrFromToToolBarClick = [];
         $arrMnuFile = [];
         $arrMnuEdit = [];
 
         $bar = $this->output->createProgressBar($files->count());
+        $bar->setFormat('File: %message%' . $this->createEnter() . ' %current%/%max% [%bar%] %percent:3s%%');
         $bar->start();
         
         foreach ($files as $file) {
             $matchesMainFilename = null;
             $mainFilename = '';
+
+            $bar->setMessage($file->getFilename());
 
             if (preg_match('/(.*)\.Designer\.vb/', $file->getFilename(), $matchesMainFilename)) {
                 $mainFilename = str_replace('_frm', '', $matchesMainFilename[1]);
@@ -429,7 +434,8 @@ class AutoConvert extends Command
                 File::replaceInFile('.PaperSize = CoReportsCore.corPaperSize.corPaperA4', '.PaperSize = corPaperSize.corPaperA4', $file->getPathname());
                 File::replaceInFile('.ObjectType = CoReports.corObjectType.corList', '.ObjectType = corObjectType.corList', $file->getPathname());
 
-                
+                $this->removeLineByKeySearch(preg_quote("' —š—ð", '/'), $file->getPathname(), true);
+
             }
 
             $bar->advance();
@@ -453,7 +459,7 @@ class AutoConvert extends Command
 
     protected function removeLineByKeySearch($keySearch, $path, $isRegex, $toString = '') {
         $arrFileContent = file($path);
-        $exceptText = ['UPGRADE\_'];
+        $exceptText = ['UPGRADE\_', preg_quote("' —š—ð", '/')];
 
         foreach ($arrFileContent as $content) {
             if (preg_match('/^\s*\'.*/', $content) && !in_array($keySearch, $exceptText)) {
