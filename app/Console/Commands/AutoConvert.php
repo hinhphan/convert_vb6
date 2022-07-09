@@ -311,7 +311,7 @@ class AutoConvert extends Command
 
                 $this->replaceQestionMarkToText($file->getPathname());
 
-                File::replaceInFile('Private mCrForm As CoReports.CrForm', 'Private mCrForm As CrForm' . $this->createEnter() . $this->createTab() . 'Private mCrDraw As CrDraw', $file->getPathname());
+                File::replaceInFile('Private mCrForm As CoReports.CrForm', 'Private mCrForm As CrForm' . $this->createEnter() . $this->createTab() . 'Private mCrDraw As CrDraw' . $this->createEnter() .$this->createTab() . 'Private Const mPaperSize As String = "A4"' . $this->createEnter(), $file->getPathname());
                 File::replaceInFile('If pFncVal <> 0 Then', 'If FormUtil.isPrtEndError(pFncVal) Then', $file->getPathname());
 
                 File::replaceInFile('AxPGRIDLib.AxPerfectGrid', 'CoreLib.UltraGridP', $file->getPathname());
