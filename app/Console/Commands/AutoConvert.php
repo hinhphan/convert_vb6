@@ -70,7 +70,7 @@ class AutoConvert extends Command
 
         $newVBProjPath = $this->dirVBNET . DIRECTORY_SEPARATOR . $programId . DIRECTORY_SEPARATOR . $programId.".vbproj";
 
-        // 2-4. [ãƒ—ãƒ­ã‚°ãƒ©ãƒ?ID].vbproj.userã‚’å‰Šé™¤ã™ã‚‹ã€?
+        // 2-4. [ãƒ—ãƒ­ã‚°ãƒ©ï¿½?ID].vbproj.userã‚’å‰Šé™¤ã™ã‚‹ï¿½?
         if (!File::delete($this->dirVBNET . DIRECTORY_SEPARATOR . $programId . DIRECTORY_SEPARATOR . $programId.".vbproj.user")) {
             // $this->warn("Can't delete file ".$programId.".vbproj.user");
         }
@@ -210,8 +210,8 @@ class AutoConvert extends Command
                 File::replaceInFile('Friend WithEvents xLabel2 As System.Windows.Forms.Label', 'Friend WithEvents xLabel2 As CoreLib.LabelS', $file->getPathname());
                 File::replaceInFile('Me.xLabel2 = New System.Windows.Forms.Label', 'Me.xLabel2 = New CoreLib.LabelS', $file->getPathname());
 
-                File::replaceInFile('Friend WithEvents xLabel1 As System.Windows.Forms.Label', 'Friend WithEvents xLabel1 As CoreLib.LabelS', $file->getPathname());
-                File::replaceInFile('Me.xLabel1 = New System.Windows.Forms.Label', 'Me.xLabel1 = New CoreLib.LabelS', $file->getPathname());
+                // File::replaceInFile('Friend WithEvents xLabel1 As System.Windows.Forms.Label', 'Friend WithEvents xLabel1 As CoreLib.LabelS', $file->getPathname());
+                // File::replaceInFile('Me.xLabel1 = New System.Windows.Forms.Label', 'Me.xLabel1 = New CoreLib.LabelS', $file->getPathname());
 
                 File::replaceInFile('Friend WithEvents cboSTCDGK As CoreLib.ComboBoxL', 'Friend WithEvents cboSTCDGK As CoreLib.UltraComboE', $file->getPathname());
                 File::replaceInFile('Me.cboSTCDGK = New CoreLib.ComboBoxL', 'Me.cboSTCDGK = New CoreLib.UltraComboE', $file->getPathname());
@@ -225,8 +225,8 @@ class AutoConvert extends Command
                 File::replaceInFile('Friend WithEvents cboEDKBSK As CoreLib.ComboBoxL', 'Friend WithEvents cboEDKBSK As CoreLib.UltraComboE', $file->getPathname());
                 File::replaceInFile('Me.cboEDKBSK = New CoreLib.ComboBoxL', 'Me.cboEDKBSK = New CoreLib.UltraComboE', $file->getPathname());
 
-                File::replaceInFile('Ì§²Ù', 'ƒtƒ@ƒCƒ‹', $file->getPathname());
-                File::replaceInFile('ÍÙÌß', 'ƒwƒ‹ƒv', $file->getPathname());
+                File::replaceInFile('Ì§ï¿½ï¿½', 'ï¿½tï¿½@ï¿½Cï¿½ï¿½', $file->getPathname());
+                File::replaceInFile('ï¿½ï¿½ï¿½ï¿½', 'ï¿½wï¿½ï¿½ï¿½v', $file->getPathname());
 
                 $this->changeSizeToolBarButton($file->getPathname());
 
@@ -336,7 +336,7 @@ class AutoConvert extends Command
                 File::replaceInFile('Handles Me.FormClosed', 'Handles Me.FormClosing', $file->getPathname());
 
                 if (!preg_match('/'.preg_quote('If mnuFILEItem_9.Enabled = False Then', '/').'/', file_get_contents($file->getPathname()))) {
-                    $this->appendTextToFunction('frm'.$mainFilename.'_FormClosed', $this->createTab(2) . 'If mnuFILEItem_9.Enabled = False Then' . $this->createEnter() . $this->createTab(3) . 'mMsgText = "“o˜^ˆ—’†‚Å‚·BI—¹‚Å‚«‚Ü‚¹‚ñB"' . $this->createEnter() . $this->createTab(3) . 'MsgBox(mMsgText, MsgBoxStyle.OkOnly + MsgBoxStyle.Exclamation,mMBOXTitle)' . $this->createEnter() . $this->createTab(3) . 'eventArgs.Cancel = True' . $this->createEnter() . $this->createTab(3) . 'Exit Sub' . $this->createEnter() . $this->createTab(2) . 'End if' . $this->createEnter(), $file->getPathname(), 'Sub frm'.$mainFilename.'_FormClosed');
+                    $this->appendTextToFunction('frm'.$mainFilename.'_FormClosed', $this->createTab(2) . 'If mnuFILEItem_9.Enabled = False Then' . $this->createEnter() . $this->createTab(3) . 'mMsgText = "ï¿½oï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å‚ï¿½ï¿½Bï¿½Iï¿½ï¿½ï¿½Å‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½B"' . $this->createEnter() . $this->createTab(3) . 'MsgBox(mMsgText, MsgBoxStyle.OkOnly + MsgBoxStyle.Exclamation,mMBOXTitle)' . $this->createEnter() . $this->createTab(3) . 'eventArgs.Cancel = True' . $this->createEnter() . $this->createTab(3) . 'Exit Sub' . $this->createEnter() . $this->createTab(2) . 'End if' . $this->createEnter(), $file->getPathname(), 'Sub frm'.$mainFilename.'_FormClosed');
                 }
 
                 // Add dbCmd, dbRec -> Bas_
@@ -421,20 +421,20 @@ class AutoConvert extends Command
                 $this->removeLineByKeySearch(preg_quote('mPRNDevice = Printer.DeviceName', '/'), $file->getPathname(), true);
                 $this->removeLineByKeySearch(preg_quote('mPRNDriver = Printer.DriverName', '/'), $file->getPathname(), true);
                 $this->removeLineByKeySearch(preg_quote('mPRNPort = Printer.Port', '/'), $file->getPathname(), true);
-                $this->removeLineByKeySearch(preg_quote('lblPaperSize.Text = "‚`‚SFc"', '/'), $file->getPathname(), true);
+                $this->removeLineByKeySearch(preg_quote('lblPaperSize.Text = "ï¿½`ï¿½Sï¿½Fï¿½c"', '/'), $file->getPathname(), true);
                 $this->removeLineByKeySearch(preg_quote('Call ComboPrnSet(Me, mPRNDevice)', '/'), $file->getPathname(), true);
 
-                File::replaceInFile('Format(pYMD, "yyyy”N“x")', 'Format(Convert.ToDateTime(pYMD), "yyyy”N“x")', $file->getPathname());
-                File::replaceInFile('’†‰›‘µ‚¦', 'center', $file->getPathname());
-                File::replaceInFile('¶‘µ‚¦', 'left', $file->getPathname());
-                File::replaceInFile('‰E‘µ‚¦', 'right', $file->getPathname());
+                File::replaceInFile('Format(pYMD, "yyyyï¿½Nï¿½x")', 'Format(Convert.ToDateTime(pYMD), "yyyyï¿½Nï¿½x")', $file->getPathname());
+                File::replaceInFile('ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½', 'center', $file->getPathname());
+                File::replaceInFile('ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½', 'left', $file->getPathname());
+                File::replaceInFile('ï¿½Eï¿½ï¿½ï¿½ï¿½', 'right', $file->getPathname());
 
                 $this->removeLineByKeySearch('Private ExcelApp As New Microsoft\.Office\.Interop\.Excel\.Application', $file->getPathname(), true);
 
                 File::replaceInFile('.PaperSize = CoReportsCore.corPaperSize.corPaperA4', '.PaperSize = corPaperSize.corPaperA4', $file->getPathname());
                 File::replaceInFile('.ObjectType = CoReports.corObjectType.corList', '.ObjectType = corObjectType.corList', $file->getPathname());
 
-                $this->removeLineByKeySearch(preg_quote("' —š—ð", '/'), $file->getPathname(), true);
+                $this->removeLineByKeySearch(preg_quote("' ï¿½ï¿½ï¿½ï¿½", '/'), $file->getPathname(), true);
 
             }
 
@@ -459,7 +459,7 @@ class AutoConvert extends Command
 
     protected function removeLineByKeySearch($keySearch, $path, $isRegex, $toString = '') {
         $arrFileContent = file($path);
-        $exceptText = ['UPGRADE\_', preg_quote("' —š—ð", '/')];
+        $exceptText = ['UPGRADE\_', preg_quote("' ï¿½ï¿½ï¿½ï¿½", '/')];
 
         foreach ($arrFileContent as $content) {
             if (preg_match('/^\s*\'.*/', $content) && !in_array($keySearch, $exceptText)) {
