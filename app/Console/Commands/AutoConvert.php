@@ -140,6 +140,7 @@ class AutoConvert extends Command
                 File::replaceInFile('_xLabel', 'xLabel', $file->getPathname());
                 File::replaceInFile('_lbl', 'lbl', $file->getPathname());
                 File::replaceInFile('_PGrid', 'PGrid', $file->getPathname());
+                File::replaceInFile('_chk', 'chk', $file->getPathname());
 
                 $fileContent = File::get($file->getPathname());
 
@@ -168,7 +169,7 @@ class AutoConvert extends Command
                 $this->removeLineByKeySearch('Me\.KeyPreview', $file->getPathname(), true);
 
                 File::replaceInFile('AxxComboLib.AxxCombo', 'CoreLib.UltraComboE', $file->getPathname());
-                File::replaceInFile('AxxDropLib.AxxDrop', 'CoreLib.ComboBoxL', $file->getPathname());
+                File::replaceInFile('AxxDropLib.AxxDrop', 'CoreLib.UltraComboE', $file->getPathname());
                 File::replaceInFile('AxxLabelLib.AxxLabel', 'System.Windows.Forms.Label', $file->getPathname());
                 File::replaceInFile('AxxLabelLib.AxxLabelArray', 'System.Windows.Forms.Label', $file->getPathname());
                 File::replaceInFile('AxxLabelArray', 'CoreLib.LabelS', $file->getPathname());
@@ -277,7 +278,7 @@ class AutoConvert extends Command
 
                 File::replaceInFile('GoSub', 'GoTo', $file->getPathname());
 
-                $arrTBName = ['PRINT', 'PREVIEW', 'CANCEL', 'EXIT', 'EXEC', 'ROWDELETE', 'COPY', 'ROWINSERT', 'EXCEL', 'DELETE', 'EDIT', 'HELP'];
+                $arrTBName = ['PRINT', 'PREVIEW', 'CANCEL', 'EXIT', 'EXEC', 'ROWDELETE', 'COPY', 'ROWINSERT', 'EXCEL', 'DELETE', 'EDIT', 'HELP', 'PRE', 'AUTO'];
                 foreach ($arrTBName as $tbName) {
                     File::replaceInFile('Toolbar1.Items.Item("'.$tbName.'").Enabled', 'tb'.$tbName.'.Enabled', $file->getPathname());
                     File::replaceInFile('Case "'.$tbName.'"', 'Case "tb'.$tbName.'"', $file->getPathname());
@@ -306,7 +307,10 @@ class AutoConvert extends Command
                 File::replaceInFile('VB6.PixelsToTwipsY(', 'PixelsToTwipsY(Me, ', $file->getPathname());
                 File::replaceInFile('VB6.TwipsPerPixelX', 'TwipsPerPixelX(Me)', $file->getPathname());
                 File::replaceInFile('yyyy/mm/dd', 'yyyy/MM/dd', $file->getPathname());
+                File::replaceInFile('yyyymmdd', 'yyyyMMdd', $file->getPathname());
+                File::replaceInFile('yyyy”NmmŒŽdd“ú', 'yyyy”NMMŒŽdd“ú', $file->getPathname());
                 File::replaceInFile('hh:nn', 'HH:mm', $file->getPathname());
+                File::replaceInFile('hh:MM:ss', 'HH:mm:ss', $file->getPathname());
 
                 File::replaceInFile('CrDraw1', 'mCrDraw', $file->getPathname());
 
